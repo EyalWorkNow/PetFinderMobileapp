@@ -8,7 +8,7 @@
 ## Install Dependencies
 1. Ensure `pnpm` is installed (`corepack enable` recommended).
 2. From repo root, run:
-   - `pnpm install`
+   - `pnpm -w install`
 
 ## Run Mobile App
 1. Create `apps/mobile/.env` from `apps/mobile/.env.example`.
@@ -29,9 +29,11 @@
 - `pnpm dev`
 
 ## Lint, Typecheck, Tests
-- Lint all workspaces: `pnpm lint`
-- Typecheck all workspaces: `pnpm typecheck`
-- Run tests all workspaces: `pnpm test`
+- Shared ESLint run: `pnpm lint:eslint`
+- Lint all workspaces: `pnpm -w lint`
+- Typecheck all workspaces: `pnpm -w typecheck`
+- Run tests all workspaces: `pnpm -w test`
+- Optional format check: `pnpm format:check`
 
 ## Seed Sample Data
 ### In-memory local dev mode
@@ -41,4 +43,3 @@
 1. Apply SQL migration at `apps/api/migrations/001_init.sql`.
 2. Run:
    - `pnpm seed`
-

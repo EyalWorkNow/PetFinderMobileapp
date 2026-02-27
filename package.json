@@ -8,7 +8,9 @@
     "dev:api": "pnpm --filter @petfind/api dev",
     "dev:mobile": "pnpm --filter @petfind/mobile dev",
     "build": "pnpm -r build",
-    "lint": "pnpm -r lint",
+    "lint": "pnpm lint:eslint && pnpm -r lint",
+    "lint:eslint": "eslint .",
+    "format:check": "prettier --check .",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
     "seed": "pnpm --filter @petfind/api seed"
@@ -16,6 +18,9 @@
   "devDependencies": {
     "@types/node": "^22.13.9",
     "concurrently": "^9.1.2",
-    "typescript": "^5.8.2"
+    "eslint": "^9.36.0",
+    "prettier": "^3.6.2",
+    "typescript": "^5.8.2",
+    "typescript-eslint": "^8.44.1"
   }
 }

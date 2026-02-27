@@ -1,0 +1,199 @@
+# TASKS
+
+## How to run
+- Install deps: `pnpm -w install`
+- Lint: `pnpm -w lint`
+- Typecheck: `pnpm -w typecheck`
+- Tests: `pnpm -w test`
+- API dev server: `pnpm --filter @petfind/api dev`
+- Mobile dev server: `pnpm --filter @petfind/mobile dev`
+- Last verified: Task 1 checks green (`pnpm -w lint && pnpm -w typecheck && pnpm -w test`)
+
+## Global rules
+- [ ] Prefer Expo + Supabase for speed, but keep providers modular.
+- [ ] Keep the repo runnable WITHOUT external keys (mock providers + local seed).
+- [ ] TypeScript everywhere, zod validation, lint + tests.
+- [ ] No over-engineering. If something is ambiguous, decide an MVP assumption and document it in README.
+- [ ] Always add/refresh AGENTS.md (repo map + run commands) as tasks evolve.
+
+## Task list
+- [x] TASK 1 — Monorepo scaffold + tooling (pnpm workspaces)
+  - Goal: repo boots, lint/typecheck/test frameworks wired.
+  - Do:
+    - pnpm workspace monorepo:
+      - apps/mobile (Expo RN TS)
+      - apps/api (Fastify TS)
+      - packages/shared (zod schemas/types/scoring stubs)
+    - Set up ESLint + Prettier + TypeScript configs shared.
+    - Set up Vitest (or Jest) for shared + api tests.
+    - Add .env.example files for api and mobile.
+    - Create AGENTS.md (install/run/test instructions; keep it current).
+  - Acceptance:
+    - `pnpm -w install`
+    - `pnpm -w lint` passes (or at least runs with no config errors)
+    - `pnpm -w typecheck` passes
+    - `pnpm -w test` passes (even if minimal placeholder tests)
+  - Run:
+    - pnpm -w lint
+    - pnpm -w typecheck
+    - pnpm -w test
+  - Commit:
+    - "chore: scaffold monorepo and tooling"
+
+- [ ] TASK 2 — Database schema + migrations + seed (Supabase-friendly)
+  - Goal: you can create tables, enable pgvector, and seed demo data.
+  - Do:
+    - Add SQL migrations for:
+      - pgvector extension
+      - users, posts, post_photos, post_embeddings, sightings, matches, contact_messages, reports, push_tokens
+    - Add a seed script that can run without external APIs:
+      - create a few demo posts (lost/found, different pet types)
+      - add approximate locations and times
+      - insert mock embeddings so matching can be demoed
+  - Acceptance:
+    - Migrations are present and documented in README.
+    - Seed script exists and is documented (can run against Supabase local or a configured instance).
+    - `pnpm -w test` still passes.
+  - Run:
+    - pnpm -w test
+  - Commit:
+    - "feat(db): add schema migrations and seed data"
+
+- [ ] TASK 3 — API skeleton + auth verification + core endpoints (mock-first)
+  - Goal: API runs locally and supports CRUD-ish MVP endpoints with validation.
+  - Do:
+    - apps/api with Fastify + TS + zod validation
+    - JWT verification for Supabase (verify/parse auth header; if not configured, allow a DEV mode with a fixed user id)
+    - Implement endpoints (MVP):
+      - POST /posts
+      - GET /posts (filters: lat,lng,radiusKm,type,petType,sinceDays)
+      - GET /posts/:id
+      - POST /posts/:id/sightings
+      - POST /posts/:id/contact (rate limited)
+      - POST /posts/:id/report
+      - POST /posts/:id/resolve
+      - POST /push/register-token
+      - GET /matches (for current user)
+    - Add simple server-side rate limiting (contact + post create).
+    - Add OpenAPI (optional but helpful) OR at least a routes summary in README.
+  - Acceptance:
+    - `pnpm --filter api dev` starts server
+    - API has at least one integration test (create post -> returns id)
+    - Validation errors are handled cleanly
+  - Run:
+    - pnpm -w test
+    - pnpm -w lint
+    - pnpm -w typecheck
+  - Commit:
+    - "feat(api): fastify server with auth and MVP endpoints"
+
+- [ ] TASK 4 — Matching engine (providers + scoring) + tests
+  - Goal: deterministic matching works with mock provider; real provider pluggable.
+  - Do:
+    - packages/shared:
+      - zod schemas (Post, Filters, MatchScore inputs)
+      - scoring implementation:
+        - score = 0.45*visual + 0.25*attributes + 0.20*geo + 0.10*time
+      - attribute scoring (size/color/collar/breed/marks)
+      - geo/time decay functions
+    - apps/api:
+      - Embedding provider interface:
+        - MockEmbeddingProvider (default): deterministic vector from post id/text
+        - CaptionThenTextEmbeddingProvider (real): if OPENAI_API_KEY present
+      - Store embeddings in pgvector and query nearest neighbors
+      - Create matches on new post; persist matches; mark notified false
+  - Tests:
+    - Unit tests for scoring in packages/shared
+    - API integration test: create two posts -> match created with expected threshold behavior (using mock embeddings)
+  - Acceptance:
+    - Unit + integration tests pass
+    - Matching runs with mock provider out of the box
+  - Run:
+    - pnpm -w test
+    - pnpm -w typecheck
+  - Commit:
+    - "feat(matching): scoring + embedding providers + match generation"
+
+- [ ] TASK 5 — Mobile app foundation (navigation + auth + skeleton screens)
+  - Goal: app boots and screens exist with navigation, even before full data wiring.
+  - Do:
+    - Expo RN TS app with:
+      - Splash
+      - Auth (Supabase client; email+password and phone OTP if configured; DEV fallback)
+      - Tabs/Stack navigation
+      - Screens: Mode Select, Create Wizard (empty), Map (empty), Post Details (empty), Matches (empty), Profile, Settings
+    - Add a small UI kit (Card/Button/Input) and consistent styling.
+    - Permission handling stubs for camera/photos/location.
+  - Acceptance:
+    - `pnpm --filter mobile start` runs
+    - Navigation works end-to-end with placeholder content
+    - No red screens; basic loading/error toasts wired
+  - Run:
+    - pnpm -w lint
+    - pnpm -w typecheck
+  - Commit:
+    - "feat(mobile): app navigation and auth scaffolding"
+
+- [ ] TASK 6 — Mobile ↔ API integration (create post wizard + map + details + matches)
+  - Goal: main user flows work end-to-end.
+  - Do:
+    - Implement Create Post Wizard:
+      - photo capture/pick
+      - 5 interactive questions (size/colors/collar/marks/breed)
+      - location picker + search fallback + radius slider
+      - contact method + privacy toggle
+      - publish -> POST /posts
+    - Map:
+      - show pins from GET /posts with filters
+      - tap -> Post Details
+    - Post Details:
+      - show attributes, sightings
+      - add sighting
+      - contact form
+      - report
+      - resolve (owner)
+    - Matches screen:
+      - GET /matches
+      - show High vs Possible matches based on score thresholds
+    - Use tanstack-query (or similar) for caching, refetch, loading states.
+  - Acceptance:
+    - You can create a post and see it on the map.
+    - Matches appear when seeded posts or newly created posts overlap.
+    - Forms validate and show errors.
+  - Run:
+    - pnpm -w lint
+    - pnpm -w typecheck
+    - pnpm -w test
+  - Commit:
+    - "feat(mobile): implement create flow, map, details, and matches"
+
+- [ ] TASK 7 — Push notifications + throttling + docs polish + demo script
+  - Goal: high-match push works (when configured) + repo is easy to run/demo.
+  - Do:
+    - Mobile: register Expo push token; store preference toggles; quiet hours UI (basic).
+    - API: send push when score >= 0.85 and throttle to max 3/day/user.
+      - If Expo creds not set, log “would send push” (still functional).
+    - Finalize README:
+      - prerequisites
+      - Supabase setup (local/remote)
+      - env vars
+      - run instructions (api + mobile)
+      - seed instructions
+      - tests/lint
+      - “3-minute demo script”
+    - Ensure AGENTS.md is accurate and complete.
+  - Acceptance:
+    - Push path is implemented and testable (real or logged fallback).
+    - Fresh clone can follow README to run the MVP.
+    - All checks pass.
+  - Run:
+    - pnpm -w lint
+    - pnpm -w typecheck
+    - pnpm -w test
+  - Commit:
+    - "feat(notifications+docs): push alerts, throttling, and polished docs"
+
+## Finish
+- [ ] Ensure TASKS.md shows all tasks checked.
+- [ ] Ensure README and AGENTS.md are correct.
+- [ ] Provide a short final summary in README + demo steps.

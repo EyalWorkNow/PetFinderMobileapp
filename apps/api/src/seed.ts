@@ -26,12 +26,10 @@ async function main() {
   await seedDemoData(postService, repository);
   await repository.close();
 
-  // eslint-disable-next-line no-console
   console.log("Seed completed.");
 }
 
 main().catch((error) => {
-  // eslint-disable-next-line no-console
   console.error(error);
   process.exit(1);
 });
