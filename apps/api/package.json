@@ -1,0 +1,32 @@
+{
+  "name": "@petfind/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "lint": "tsc --noEmit -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "seed": "tsx src/seed.ts"
+  },
+  "dependencies": {
+    "@petfind/shared": "workspace:*",
+    "@fastify/cors": "^10.0.2",
+    "dotenv": "^16.4.7",
+    "expo-server-sdk": "^3.13.0",
+    "fastify": "^5.2.1",
+    "jose": "^5.9.6",
+    "openai": "^4.86.2",
+    "pg": "^8.13.3",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.9",
+    "@types/pg": "^8.11.13",
+    "tsx": "^4.19.3",
+    "vitest": "^2.1.9"
+  }
+}

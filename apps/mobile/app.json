@@ -1,0 +1,30 @@
+{
+  "expo": {
+    "name": "PetFind",
+    "slug": "petfind",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#0A2A43"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.petfind.mobile"
+    },
+    "android": {
+      "package": "com.petfind.mobile"
+    },
+    "plugins": [
+      "expo-notifications"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "petfind-local"
+      }
+    }
+  }
+}

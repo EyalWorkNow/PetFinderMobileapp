@@ -1,0 +1,21 @@
+{
+  "name": "petfind",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@10.6.1",
+  "scripts": {
+    "dev": "concurrently \"pnpm --filter @petfind/api dev\" \"pnpm --filter @petfind/mobile dev\"",
+    "dev:api": "pnpm --filter @petfind/api dev",
+    "dev:mobile": "pnpm --filter @petfind/mobile dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "seed": "pnpm --filter @petfind/api seed"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.9",
+    "concurrently": "^9.1.2",
+    "typescript": "^5.8.2"
+  }
+}
