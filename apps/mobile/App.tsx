@@ -5,21 +5,47 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AuthProvider, useAuth } from "./src/context/AuthContext";
 import { SettingsProvider, useSettings } from "./src/context/SettingsContext";
+import { AudioProvider } from "./src/context/AudioContext";
 import { apiRequest } from "./src/lib/api";
 import { registerForPushToken } from "./src/lib/push";
 import { AppNavigator } from "./src/navigation/AppNavigator";
 import { AuthScreen } from "./src/screens/AuthScreen";
 import { SplashScreen } from "./src/screens/SplashScreen";
+import { OnboardingScreen } from "./src/screens/OnboardingScreen";
+import { ToastProvider } from "./src/context/ToastContext";
+import { GuardianProvider } from "./src/context/GuardianContext";
+import { PetVaultProvider } from "./src/context/PetVaultContext";
 import { ScreenLoading } from "./src/components/ui";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      gcTime: 1000 * 60 * 10,   // 10 minutes
+      refetchOnWindowFocus: false,
+      retry: 2
+    }
+  }
+});
 
 function AppContent() {
   const auth = useAuth();
   const settings = useSettings();
   const [showSplash, setShowSplash] = useState(true);
+  const [hasSeenOnboarding, setHasSeenOnboarding] = useState<boolean | null>(null);
 
   useEffect(() => {
+    async function checkOnboarding() {
+      try {
+        const flag = await AsyncStorage.getItem("petfind.has_seen_onboarding");
+        setHasSeenOnboarding(flag === "true");
+      } catch {
+        setHasSeenOnboarding(false);
+      }
+    }
+    checkOnboarding().catch(() => undefined);
+
     const timer = setTimeout(() => setShowSplash(false), 1200);
     return () => clearTimeout(timer);
   }, []);
@@ -42,19 +68,24 @@ function AppContent() {
           userId: auth.userId
         });
       } catch (error) {
-        Alert.alert("Push setup", error instanceof Error ? error.message : "Failed to register push token");
+        // Silencing technical push errors as requested by user
+        console.warn("Push token registration silent fail:", error);
       }
     }
 
     setupPush().catch(() => undefined);
   }, [auth.accessToken, auth.userId, settings.notificationsEnabled]);
 
-  if (!auth.isReady || !settings.isReady) {
+  if (!auth.isReady || !settings.isReady || hasSeenOnboarding === null) {
     return <ScreenLoading label="Starting PetFind..." />;
   }
 
   if (showSplash) {
     return <SplashScreen />;
+  }
+
+  if (!hasSeenOnboarding) {
+    return <OnboardingScreen onComplete={() => setHasSeenOnboarding(true)} />;
   }
 
   return (
@@ -70,7 +101,15 @@ export default function App() {
       <QueryClientProvider client={queryClient}>
         <SettingsProvider>
           <AuthProvider>
-            <AppContent />
+            <AudioProvider>
+              <ToastProvider>
+                <GuardianProvider>
+                  <PetVaultProvider>
+                    <AppContent />
+                  </PetVaultProvider>
+                </GuardianProvider>
+              </ToastProvider>
+            </AudioProvider>
           </AuthProvider>
         </SettingsProvider>
       </QueryClientProvider>

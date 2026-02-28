@@ -365,4 +365,10 @@ export class InMemoryRepository implements Repository {
       (entry) => entry.userId === userId && entry.createdAt.getTime() >= threshold
     ).length;
   }
+
+  async checkHealth(): Promise<boolean> {
+    return true;
+  }
+
+  async close(): Promise<void> { }
 }

@@ -9,6 +9,7 @@ interface ApiRequestOptions {
 
 export async function apiRequest<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
   const url = `${appRuntimeConfig.apiUrl}${path}`;
+  console.log(`[API] Requesting: ${options.method ?? "GET"} ${url}`);
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json"
@@ -26,7 +27,12 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
     method: options.method ?? "GET",
     headers,
     body: options.body ? JSON.stringify(options.body) : undefined
+  }).catch(err => {
+    console.error(`[API] Network error for ${url}:`, err);
+    throw err;
   });
+
+  console.log(`[API] Response from ${url}: Status ${response.status}`);
 
   if (!response.ok) {
     const fallback = await response.text();

@@ -76,7 +76,14 @@ export async function buildApp(overrides: AppOverrides = {}) {
     return user;
   }
 
-  app.get("/health", async () => ({ ok: true }));
+  app.get("/health", async () => {
+    const dbOk = await repository.checkHealth();
+    return {
+      status: dbOk ? "UP" : "DEGRADED",
+      database: dbOk ? "CONNECTED" : "DISCONNECTED",
+      timestamp: new Date().toISOString()
+    };
+  });
 
   app.post("/auth/verify", async (request, reply) => {
     const user = await requireUser(request, reply);

@@ -51,4 +51,6 @@ export interface Repository {
   listPushTokens(userId: string): Promise<PushTokenRecord[]>;
   recordPushDelivery(input: { userId: string; matchId: string }): Promise<void>;
   countPushDeliveriesInLast24h(userId: string): Promise<number>;
+  checkHealth(): Promise<boolean>;
+  close(): Promise<void>;
 }

@@ -3,14 +3,16 @@ import type { PetType, PostType } from "../types/models";
 export type RootStackParamList = {
   Tabs: undefined;
   PostDetails: { postId: string };
+  Settings: undefined;
+  Matches: undefined;
 };
 
 export type MainTabParamList = {
   Map: undefined;
+  Guardian: undefined;
   Create: undefined;
-  Matches: undefined;
+  Vault: undefined;
   Profile: undefined;
-  Settings: undefined;
 };
 
 export type CreateStackParamList = {

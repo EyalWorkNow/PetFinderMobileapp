@@ -100,7 +100,7 @@ function toEmbeddingRecord(row: any): EmbeddingRecord {
 }
 
 export class PostgresRepository implements Repository {
-  constructor(private readonly pool: Pool) {}
+  constructor(private readonly pool: Pool) { }
 
   static fromConnectionString(connectionString: string): PostgresRepository {
     return new PostgresRepository(new Pool({ connectionString }));
@@ -601,6 +601,15 @@ export class PostgresRepository implements Repository {
     );
 
     return Number(result.rows[0]?.count ?? 0);
+  }
+
+  async checkHealth(): Promise<boolean> {
+    try {
+      await this.pool.query("select 1");
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   async close(): Promise<void> {

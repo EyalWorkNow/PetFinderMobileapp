@@ -7,11 +7,16 @@ interface SettingsState {
   quietHoursEnabled: boolean;
   hidePhoneByDefault: boolean;
   approximateLocationByDefault: boolean;
-  language: string;
+  audioEnabled: boolean;
+  hapticsEnabled: boolean;
+  language: "Hebrew" | "English";
   setNotificationsEnabled: (value: boolean) => void;
   setQuietHoursEnabled: (value: boolean) => void;
   setHidePhoneByDefault: (value: boolean) => void;
   setApproximateLocationByDefault: (value: boolean) => void;
+  setAudioEnabled: (value: boolean) => void;
+  setHapticsEnabled: (value: boolean) => void;
+  setLanguage: (value: "Hebrew" | "English") => void;
 }
 
 const SETTINGS_KEY = "petfind.settings.v1";
@@ -24,6 +29,9 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [quietHoursEnabled, setQuietHoursEnabled] = useState(false);
   const [hidePhoneByDefault, setHidePhoneByDefault] = useState(true);
   const [approximateLocationByDefault, setApproximateLocationByDefault] = useState(true);
+  const [audioEnabled, setAudioEnabled] = useState(true);
+  const [hapticsEnabled, setHapticsEnabled] = useState(true);
+  const [language, setLanguage] = useState<"Hebrew" | "English">("Hebrew");
 
   useEffect(() => {
     async function loadSettings() {
@@ -34,6 +42,9 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         setQuietHoursEnabled(parsed.quietHoursEnabled ?? false);
         setHidePhoneByDefault(parsed.hidePhoneByDefault ?? true);
         setApproximateLocationByDefault(parsed.approximateLocationByDefault ?? true);
+        setAudioEnabled(parsed.audioEnabled ?? true);
+        setHapticsEnabled(parsed.hapticsEnabled ?? true);
+        setLanguage(parsed.language ?? "Hebrew");
       }
       setIsReady(true);
     }
@@ -50,10 +61,13 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         notificationsEnabled,
         quietHoursEnabled,
         hidePhoneByDefault,
-        approximateLocationByDefault
+        approximateLocationByDefault,
+        audioEnabled,
+        hapticsEnabled,
+        language
       })
     ).catch(() => undefined);
-  }, [isReady, notificationsEnabled, quietHoursEnabled, hidePhoneByDefault, approximateLocationByDefault]);
+  }, [isReady, notificationsEnabled, quietHoursEnabled, hidePhoneByDefault, approximateLocationByDefault, audioEnabled, hapticsEnabled, language]);
 
   const value = useMemo(
     () => ({
@@ -62,18 +76,26 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       quietHoursEnabled,
       hidePhoneByDefault,
       approximateLocationByDefault,
-      language: "English (placeholder)",
+      audioEnabled,
+      hapticsEnabled,
+      language,
       setNotificationsEnabled,
       setQuietHoursEnabled,
       setHidePhoneByDefault,
-      setApproximateLocationByDefault
+      setApproximateLocationByDefault,
+      setAudioEnabled,
+      setHapticsEnabled,
+      setLanguage
     }),
     [
       approximateLocationByDefault,
       hidePhoneByDefault,
       isReady,
       notificationsEnabled,
-      quietHoursEnabled
+      quietHoursEnabled,
+      audioEnabled,
+      hapticsEnabled,
+      language
     ]
   );
 
