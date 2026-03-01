@@ -91,7 +91,7 @@ export class PostService {
     private readonly pushService: PushNotificationService,
     private readonly postRateLimiter: SlidingWindowRateLimiter,
     private readonly contactRateLimiter: SlidingWindowRateLimiter
-  ) {}
+  ) { }
 
   validateCreatePost(input: unknown): z.infer<typeof createPostSchema> {
     return createPostSchema.parse(input);
@@ -303,6 +303,14 @@ export class PostService {
       id: post.id,
       status: post.status as PostStatus
     };
+  }
+
+  async deletePost(userId: string, postId: string) {
+    const deleted = await this.repository.deletePost(postId, userId);
+    if (!deleted) {
+      throw new Error("POST_NOT_FOUND_OR_FORBIDDEN");
+    }
+    return { ok: true };
   }
 
   async listMatches(userId: string) {

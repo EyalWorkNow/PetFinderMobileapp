@@ -51,9 +51,10 @@ export const generatePosterHtml = (data: {
             background-color: white;
             color: #1e293b;
             width: 210mm;
-            min-height: 297mm;
+            height: 297mm;
             display: flex;
             justify-content: center;
+            overflow: hidden;
         }
 
         .poster {
@@ -62,28 +63,28 @@ export const generatePosterHtml = (data: {
             background: white;
             display: flex;
             flex-direction: column;
-            border: 10px solid ${data.primaryColor};
+            border: 5mm solid ${data.primaryColor};
         }
 
         .header {
             background-color: ${data.primaryColor};
             color: white;
-            padding: 30px 20px;
+            padding: 20px 20px;
             text-align: center;
         }
 
         .header h1 {
             margin: 0;
-            font-size: 80px;
-            font-weight: 800;
+            font-size: 60px;
+            font-weight: 900;
             text-transform: uppercase;
             letter-spacing: 2px;
             line-height: 1;
         }
 
         .header p {
-            margin-top: 10px;
-            font-size: 32px;
+            margin-top: 5px;
+            font-size: 28px;
             font-weight: 700;
             opacity: 0.95;
         }
@@ -91,46 +92,51 @@ export const generatePosterHtml = (data: {
         .image-container {
             width: 100%;
             flex: 1;
-            min-height: 400px;
-            max-height: 600px;
+            min-height: 0; /* important for flex boundaries */
             position: relative;
             background: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
         }
 
         .image-container img {
             width: 100%;
             height: 100%;
             object-fit: contain;
+            /* No crop, fits inside box */
         }
 
         .content {
-            padding: 40px;
+            padding: 30px;
             flex-shrink: 0;
         }
 
         .grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 30px;
+            gap: 15px;
+            margin-bottom: 20px;
         }
 
         .info-card {
-            background: #f1f5f9;
-            padding: 20px;
-            border-radius: 16px;
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
         }
 
         .info-card label {
             display: block;
-            font-size: 16px;
+            font-size: 14px;
             color: #64748b;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
             font-weight: 700;
         }
 
         .info-card span {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 800;
             color: #0f172a;
         }
@@ -139,10 +145,10 @@ export const generatePosterHtml = (data: {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 30px 40px;
+            padding: 20px 30px;
             background: #f8fafc;
-            border-top: 3px dashed #e2e8f0;
-            margin-top: auto;
+            border-top: 3px dashed #cbd5e1;
+            flex-shrink: 0;
         }
 
         .contact-info {

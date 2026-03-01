@@ -7,8 +7,14 @@ export function useTranslation() {
     const currentLang = (language as Language) || "Hebrew";
     const dict = translations[currentLang];
 
-    const t = (key: TranslationKey): string => {
-        return dict[key] || translations.English[key] || key;
+    const t = (key: TranslationKey, params?: Record<string, string | number>): string => {
+        let text = dict[key] || translations.English[key] || (key as string);
+        if (params) {
+            Object.keys(params).forEach(p => {
+                text = text.replace(`{{${p}}}`, params[p].toString());
+            });
+        }
+        return text;
     };
 
     const isRTL = currentLang === "Hebrew" || currentLang === "Arabic";

@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import * as Haptics from "expo-haptics";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { AppButton, colors } from "../components/ui";
+import { AppButton, useThemeColors } from "../components/ui";
 
 interface OnboardingProps {
     onComplete: () => void;
@@ -41,6 +41,8 @@ const SLIDES = [
 ];
 
 export function OnboardingScreen({ onComplete }: OnboardingProps) {
+    const colors = useThemeColors();
+    const styles = getStyles(colors);
     const [currentIndex, setCurrentIndex] = useState(0);
     const flatListRef = useRef<FlatList>(null);
 
@@ -112,7 +114,7 @@ export function OnboardingScreen({ onComplete }: OnboardingProps) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: colors.bg

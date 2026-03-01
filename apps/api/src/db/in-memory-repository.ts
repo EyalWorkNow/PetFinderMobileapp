@@ -333,6 +333,12 @@ export class InMemoryRepository implements Repository {
     return post;
   }
 
+  async deletePost(postId: string, userId: string): Promise<boolean> {
+    const initialLength = this.state.posts.length;
+    this.state.posts = this.state.posts.filter((entry) => !(entry.id === postId && entry.userId === userId));
+    return this.state.posts.length < initialLength;
+  }
+
   async registerPushToken(input: PushTokenRecord): Promise<void> {
     const existing = this.state.pushTokens.find(
       (entry) => entry.userId === input.userId && entry.expoToken === input.expoToken

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import React, { useState } from "react";
+import React from "react";
 import { Alert, FlatList, StyleSheet, Text, View, Pressable, Image, Dimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
@@ -8,12 +8,11 @@ import { RootStackParamList } from "../navigation/types";
 import * as Haptics from "expo-haptics";
 import { useAuth } from "../context/AuthContext";
 import { apiRequest } from "../lib/api";
-import { Award, BoxTime, Setting2, ShieldTick, Crown, Component } from "iconsax-react-native";
-import { AppButton, colors, useThemeColors } from "../components/ui";
+import { Award, BoxTime, Setting2, ShieldTick, Crown, Component, Trash } from "iconsax-react-native";
+import { AppButton, useThemeColors } from "../components/ui";
 import { LinearGradient } from "expo-linear-gradient";
 import type { Post } from "../types/models";
-
-const { width } = Dimensions.get("window");
+import { useTranslation } from "../i18n/useTranslation";
 
 export function ProfileScreen() {
   const auth = useAuth();
@@ -21,6 +20,7 @@ export function ProfileScreen() {
   const queryClient = useQueryClient();
   const theme = useThemeColors();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { t } = useTranslation();
 
   const myPostsQuery = useQuery({
     queryKey: ["my-posts", auth.userId],
@@ -51,7 +51,7 @@ export function ProfileScreen() {
     },
     onError: (err, variables, context) => {
       if (context?.previousPosts) queryClient.setQueryData(["my-posts", auth.userId], context.previousPosts);
-      Alert.alert("Failed", err instanceof Error ? err.message : "Unknown error");
+      Alert.alert(t("Failed"), err instanceof Error ? err.message : t("UnknownError"));
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["my-posts", auth.userId] });
@@ -61,29 +61,68 @@ export function ProfileScreen() {
     }
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: async (postId: string) => apiRequest(`/posts/${postId}`, {
+      method: "DELETE",
+      accessToken: auth.accessToken,
+      userId: auth.userId
+    }),
+    onMutate: async (postId) => {
+      await queryClient.cancelQueries({ queryKey: ["my-posts", auth.userId] });
+      const previousPosts = queryClient.getQueryData<Post[]>(["my-posts", auth.userId]);
+      if (previousPosts) {
+        queryClient.setQueryData<Post[]>(["my-posts", auth.userId], previousPosts.filter((p) => p.id !== postId));
+      }
+      return { previousPosts };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousPosts) queryClient.setQueryData(["my-posts", auth.userId], context.previousPosts);
+      Alert.alert(t("Failed"), err instanceof Error ? err.message : t("UnknownError"));
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["my-posts", auth.userId] });
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+    },
+    onSuccess: () => {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+  });
+
+  const handleDelete = (postId: string) => {
+    Alert.alert(
+      t("DeletePost"),
+      t("DeletePostConfirm"),
+      [
+        { text: t("Cancel"), style: "cancel" },
+        { text: t("Delete"), style: "destructive", onPress: () => deleteMutation.mutate(postId) }
+      ]
+    );
+  };
+
   const activeCount = (myPostsQuery.data ?? []).filter((item) => item.status === "ACTIVE").length;
   const resolvedCount = (myPostsQuery.data ?? []).filter((item) => item.status === "RESOLVED").length;
 
   const renderHeroDashboard = () => (
     <View style={styles.heroWrapper}>
       <View style={styles.topNav}>
-        <Text style={[styles.navTitle, { color: theme.text }]}>Command Center</Text>
+        <Text style={[styles.navTitle, { color: theme.text }]}>{t("CommandCenter")}</Text>
         <Pressable onPress={() => navigation.navigate("Settings")}>
           <Setting2 size={28} color={theme.text} variant="Outline" />
         </Pressable>
       </View>
 
-      <LinearGradient
-        colors={[theme.primary, "#4F46E5"]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.heroCard}
-      >
+      <View style={[styles.heroCard, { backgroundColor: theme.primary, shadowColor: theme.primary }]}>
+        <LinearGradient
+          colors={["rgba(255,255,255,0.2)", "rgba(0,0,0,0.4)"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={StyleSheet.absoluteFill}
+        />
         <View style={styles.heroGlass}>
           <View style={styles.heroHeader}>
             <View>
-              <Text style={styles.heroLevel}>Neighborhood Legend</Text>
-              <Text style={styles.heroName}>Level 42 Guardian</Text>
+              <Text style={styles.heroLevel}>{t("NeighborhoodLegend")}</Text>
+              <Text style={styles.heroName}>{t("Level42Guardian")}</Text>
             </View>
             <View style={styles.rankIconBg}>
               <Crown size={28} color="#FBBF24" variant="Bulk" />
@@ -94,25 +133,25 @@ export function ProfileScreen() {
             <View style={styles.statBox}>
               <Award size={24} color="#fff" variant="Bulk" />
               <Text style={styles.statVal}>15,420</Text>
-              <Text style={styles.statLabel}>Karma Score</Text>
+              <Text style={styles.statLabel}>{t("KarmaScore")}</Text>
             </View>
             <View style={styles.divider} />
             <View style={styles.statBox}>
               <ShieldTick size={24} color="#fff" variant="Bulk" />
               <Text style={styles.statVal}>{resolvedCount}</Text>
-              <Text style={styles.statLabel}>Pets Rescued</Text>
+              <Text style={styles.statLabel}>{t("PetsRescued")}</Text>
             </View>
             <View style={styles.divider} />
             <View style={styles.statBox}>
               <Component size={24} color="#fff" variant="Bulk" />
               <Text style={styles.statVal}>{activeCount}</Text>
-              <Text style={styles.statLabel}>Active Ops</Text>
+              <Text style={styles.statLabel}>{t("ActiveOps")}</Text>
             </View>
           </View>
         </View>
-      </LinearGradient>
+      </View>
 
-      <Text style={[styles.sectionTitle, { color: theme.text }]}>Active Operations</Text>
+      <Text style={[styles.sectionTitle, { color: theme.text }]}>{t("ActiveOperations")}</Text>
     </View>
   );
 
@@ -125,8 +164,8 @@ export function ProfileScreen() {
         ListEmptyComponent={
           <View style={styles.emptyWrap}>
             <BoxTime size={64} color={theme.muted} variant="Outline" style={{ marginBottom: 16 }} />
-            <Text style={[styles.empty, { color: theme.text }]}>No Data Found</Text>
-            <Text style={[styles.emptySub, { color: theme.muted }]}>You haven't initiated any patrol or rescue operations yet.</Text>
+            <Text style={[styles.empty, { color: theme.text }]}>{t("NoDataFound")}</Text>
+            <Text style={[styles.emptySub, { color: theme.muted }]}>{t("NoOperationsInitiated")}</Text>
           </View>
         }
         contentContainerStyle={styles.list}
@@ -138,11 +177,11 @@ export function ProfileScreen() {
             <View style={[styles.missionCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
               <View style={styles.missionHeader}>
                 <Text style={[styles.missionType, { color: item.type === "LOST" ? theme.danger : theme.success }]}>
-                  OPERATION: {item.type}
+                  {t("OPERATION")}: {t(item.type)}
                 </Text>
                 <View style={[styles.statusBadge, { backgroundColor: item.status === "ACTIVE" ? theme.primarySoft : theme.border }]}>
                   <Text style={[styles.statusText, { color: item.status === "ACTIVE" ? theme.primary : theme.muted }]}>
-                    {item.status}
+                    {t(item.status)}
                   </Text>
                 </View>
               </View>
@@ -159,21 +198,29 @@ export function ProfileScreen() {
                 </View>
                 <View style={styles.missionDetails}>
                   <Text style={[styles.missionTitle, { color: theme.text }]} numberOfLines={1}>{item.title}</Text>
-                  <Text style={[styles.missionMeta, { color: theme.muted }]}>{item.lastSeen?.label || "Unknown Location"}</Text>
+                  <Text style={[styles.missionMeta, { color: theme.muted }]}>{item.lastSeen?.label || t("UnknownLocation")}</Text>
                   <Text style={[styles.missionDesc, { color: theme.text }]} numberOfLines={2}>{item.shortDesc}</Text>
                 </View>
               </View>
 
-              {item.status === "ACTIVE" && (
-                <View style={styles.actionBlock}>
-                  <AppButton
-                    label="Archive / Mark Resolved"
-                    onPress={() => resolveMutation.mutate(item.id)}
-                    loading={resolveMutation.isPending}
-                    tone="secondary"
-                  />
-                </View>
-              )}
+              <View style={[styles.actionBlock, { flexDirection: "row", gap: 8 }]}>
+                {item.status === "ACTIVE" ? (
+                  <View style={{ flex: 1 }}>
+                    <AppButton
+                      label={t("ArchiveMarkResolved")}
+                      onPress={() => resolveMutation.mutate(item.id)}
+                      loading={resolveMutation.isPending}
+                      tone="secondary"
+                    />
+                  </View>
+                ) : <View style={{ flex: 1 }} />}
+                <Pressable
+                  style={[styles.deleteBtn, { backgroundColor: theme.danger + "20" }]}
+                  onPress={() => handleDelete(item.id)}
+                >
+                  <Trash size={24} color={theme.danger} variant="Bulk" />
+                </Pressable>
+              </View>
             </View>
           </Pressable>
         )}
@@ -191,7 +238,6 @@ const styles = StyleSheet.create({
   heroCard: {
     borderRadius: 32,
     marginBottom: 32,
-    shadowColor: "#4F46E5",
     shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.3,
     shadowRadius: 24,
@@ -201,16 +247,15 @@ const styles = StyleSheet.create({
   heroGlass: {
     padding: 24,
     backgroundColor: "rgba(255,255,255,0.1)",
-    // Note: backdrop-filter is web only, RN requires BlurView for real glass, using opacity for compat
   },
   heroHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 32 },
-  heroLevel: { color: "rgba(255,255,255,0.7)", fontSize: 13, fontWeight: "800", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 },
-  heroName: { color: "#fff", fontSize: 24, fontWeight: "900" },
-  rankIconBg: { width: 56, height: 56, borderRadius: 28, backgroundColor: "rgba(255,255,255,0.2)", alignItems: "center", justifyContent: "center" },
-  heroStats: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", backgroundColor: "rgba(0,0,0,0.2)", borderRadius: 24, padding: 16 },
+  heroLevel: { color: "rgba(255,255,255,0.9)", fontSize: 14, fontWeight: "800", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 4 },
+  heroName: { color: "#ffffff", fontSize: 28, fontWeight: "900", letterSpacing: -0.5, textShadowColor: "rgba(0,0,0,0.2)", textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 8 },
+  rankIconBg: { width: 56, height: 56, borderRadius: 28, backgroundColor: "rgba(0,0,0,0.2)", borderWidth: 1, borderColor: "rgba(255,255,255,0.2)", alignItems: "center", justifyContent: "center" },
+  heroStats: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", backgroundColor: "rgba(0,0,0,0.25)", borderRadius: 24, padding: 20, borderWidth: 1, borderColor: "rgba(255,255,255,0.1)" },
   statBox: { flex: 1, alignItems: "center", gap: 4 },
-  statVal: { color: "#fff", fontSize: 20, fontWeight: "900", marginTop: 4 },
-  statLabel: { color: "rgba(255,255,255,0.6)", fontSize: 11, fontWeight: "700", textTransform: "uppercase" },
+  statVal: { color: "#ffffff", fontSize: 22, fontWeight: "900", marginTop: 4, textShadowColor: "rgba(0,0,0,0.2)", textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 4 },
+  statLabel: { color: "rgba(255,255,255,0.8)", fontSize: 12, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.5 },
   divider: { width: 1, height: 32, backgroundColor: "rgba(255,255,255,0.2)" },
   sectionTitle: { fontSize: 20, fontWeight: "900", marginLeft: 4, marginBottom: 8 },
   emptyWrap: { alignItems: "center", justifyContent: "center", marginTop: 40, padding: 32 },
@@ -228,5 +273,6 @@ const styles = StyleSheet.create({
   missionTitle: { fontSize: 18, fontWeight: "800" },
   missionMeta: { fontSize: 13, fontWeight: "600" },
   missionDesc: { fontSize: 14, lineHeight: 20, marginTop: 4 },
-  actionBlock: { marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: "rgba(0,0,0,0.05)" }
+  actionBlock: { marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: "rgba(0,0,0,0.05)" },
+  deleteBtn: { width: 50, height: 50, borderRadius: 25, alignItems: "center", justifyContent: "center" }
 });

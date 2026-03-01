@@ -47,6 +47,7 @@ export interface Repository {
     reason: string;
   }): Promise<ReportRecord>;
   resolvePost(postId: string, userId: string): Promise<PostRecord | null>;
+  deletePost(postId: string, userId: string): Promise<boolean>;
   registerPushToken(input: PushTokenRecord): Promise<void>;
   listPushTokens(userId: string): Promise<PushTokenRecord[]>;
   recordPushDelivery(input: { userId: string; matchId: string }): Promise<void>;

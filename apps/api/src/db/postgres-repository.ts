@@ -561,6 +561,15 @@ export class PostgresRepository implements Repository {
     return toPostRecord(result.rows[0]);
   }
 
+  async deletePost(postId: string, userId: string): Promise<boolean> {
+    const result = await this.pool.query(
+      `delete from posts
+       where id = $1 and user_id = $2`,
+      [postId, userId]
+    );
+    return result.rowCount ? result.rowCount > 0 : false;
+  }
+
   async registerPushToken(input: PushTokenRecord): Promise<void> {
     await this.pool.query(
       `insert into push_tokens (user_id, expo_token, updated_at)

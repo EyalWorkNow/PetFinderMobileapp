@@ -6,7 +6,9 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "splash": {
-      "backgroundColor": "#0A2A43"
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0A4A72"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -19,7 +21,9 @@
       "package": "com.petfind.mobile"
     },
     "plugins": [
-      "expo-notifications"
+      "expo-notifications",
+      "expo-asset",
+      "expo-font"
     ],
     "extra": {
       "eas": {

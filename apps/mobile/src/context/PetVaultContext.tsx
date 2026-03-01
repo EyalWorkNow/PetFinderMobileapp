@@ -53,10 +53,10 @@ const defaultState: PetVaultState = {
         status: "SAFE",
     },
     records: [
-        { id: "1", label: "Behavior", value: "Skittish around strangers. Do not chase.", iconType: "warning" },
-        { id: "2", label: "Motivation", value: "Highly food motivated, squeaky toys work.", iconType: "success" },
-        { id: "3", label: "Marks", value: "White patch on chest, scar on left ear.", iconType: "info" },
-        { id: "4", label: "Triggers", value: "Terrified of loud noises (motorcycles).", iconType: "danger" }
+        { id: "1", label: "Behavior", value: "SkittishAroundStrangers", iconType: "warning" },
+        { id: "2", label: "Motivation", value: "HighlyFoodMotivated", iconType: "success" },
+        { id: "3", label: "Marks", value: "WhitePatchOnChest", iconType: "info" },
+        { id: "4", label: "Triggers", value: "TerrifiedOfLoudNoises", iconType: "danger" }
     ],
     tasks: [
         { id: "1", title: "Rabies Booster", date: "Mar 12, 2026", time: "10:30 AM", type: "VET" },

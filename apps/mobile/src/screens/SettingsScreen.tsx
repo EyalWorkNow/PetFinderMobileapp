@@ -17,14 +17,20 @@ import {
   Logout,
   SecuritySafe,
   UserEdit,
-  ArrowLeft
+  ArrowLeft,
+  Sun1,
+  Moon,
+  Mobile
 } from "iconsax-react-native";
+import { useTheme } from "../context/ThemeContext";
 
 export function SettingsScreen() {
   const settings = useSettings();
   const auth = useAuth();
   const { t, isRTL } = useTranslation();
   const theme = useThemeColors();
+  const styles = makeStyles(theme);
+  const { themeMode, setThemeMode, primaryColor, setPrimaryColor } = useTheme();
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
 
@@ -74,6 +80,49 @@ export function SettingsScreen() {
             icon={<SecuritySafe size={22} color={theme.primary} variant="Bulk" />}
             disabled
           />
+        </AppCard>
+
+        {/* Theme Section */}
+        <Text style={styles.sectionHeader}>{t("Theme")}</Text>
+        <AppCard style={{ padding: 12, gap: 12 }}>
+          <Text style={{ color: theme.muted, fontSize: 13, paddingHorizontal: 4 }}>
+            {t("SystemThemeDesc")}
+          </Text>
+          <View style={{ flexDirection: "row", gap: 8 }}>
+            <ThemeOption
+              label={t("System")}
+              icon={<Mobile size={20} color={themeMode === "system" ? theme.primary : theme.muted} variant={themeMode === "system" ? "Bulk" : "Outline"} />}
+              isSelected={themeMode === "system"}
+              onPress={() => setThemeMode("system")}
+              theme={theme}
+            />
+            <ThemeOption
+              label={t("Light")}
+              icon={<Sun1 size={20} color={themeMode === "light" ? theme.primary : theme.muted} variant={themeMode === "light" ? "Bulk" : "Outline"} />}
+              isSelected={themeMode === "light"}
+              onPress={() => setThemeMode("light")}
+              theme={theme}
+            />
+            <ThemeOption
+              label={t("Dark")}
+              icon={<Moon size={20} color={themeMode === "dark" ? theme.primary : theme.muted} variant={themeMode === "dark" ? "Bulk" : "Outline"} />}
+              isSelected={themeMode === "dark"}
+              onPress={() => setThemeMode("dark")}
+              theme={theme}
+            />
+          </View>
+        </AppCard>
+
+        {/* Primary Color Section */}
+        <Text style={styles.sectionHeader}>{t("PrimaryColor") || "Primary Color"}</Text>
+        <AppCard style={{ padding: 12 }}>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 4 }}>
+            <ColorDot colorName="purple" hex="#6366F1" selected={primaryColor === "purple"} onPress={() => setPrimaryColor("purple")} theme={theme} />
+            <ColorDot colorName="blue" hex="#0EA5E9" selected={primaryColor === "blue"} onPress={() => setPrimaryColor("blue")} theme={theme} />
+            <ColorDot colorName="green" hex="#10B981" selected={primaryColor === "green"} onPress={() => setPrimaryColor("green")} theme={theme} />
+            <ColorDot colorName="orange" hex="#F59E0B" selected={primaryColor === "orange"} onPress={() => setPrimaryColor("orange")} theme={theme} />
+            <ColorDot colorName="rose" hex="#F43F5E" selected={primaryColor === "rose"} onPress={() => setPrimaryColor("rose")} theme={theme} />
+          </View>
         </AppCard>
 
         {/* Notifications Section */}
@@ -168,6 +217,9 @@ function SettingRow({
   icon: React.ReactNode;
   disabled?: boolean;
 }) {
+  const theme = useThemeColors();
+  const styles = makeStyles(theme);
+
   return (
     <View style={[styles.row, disabled && { opacity: 0.5 }]}>
       <View style={styles.rowLeft}>
@@ -177,14 +229,53 @@ function SettingRow({
       <Switch
         value={value}
         onValueChange={onValueChange}
-        trackColor={{ true: colors.primary }}
+        trackColor={{ true: theme.primary }}
         disabled={disabled}
       />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+function ThemeOption({ label, icon, isSelected, onPress, theme }: any) {
+  const styles = makeStyles(theme);
+  return (
+    <Pressable
+      onPress={onPress}
+      style={[
+        styles.themeOption,
+        { backgroundColor: isSelected ? theme.primarySoft : theme.bg, borderColor: isSelected ? theme.primary : theme.border }
+      ]}
+    >
+      {icon}
+      <Text style={[styles.themeOptionText, { color: isSelected ? theme.primary : theme.muted }]}>{label}</Text>
+    </Pressable>
+  );
+}
+
+function ColorDot({ hex, selected, onPress, theme }: any) {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={{
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: hex,
+        borderWidth: selected ? 3 : 0,
+        borderColor: theme.text,
+        alignItems: "center",
+        justifyContent: "center",
+        shadowColor: hex,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: selected ? 0.4 : 0.1,
+        shadowRadius: 6,
+        elevation: selected ? 6 : 2
+      }}
+    />
+  );
+}
+
+const makeStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1
   },
@@ -208,7 +299,7 @@ const styles = StyleSheet.create({
   sectionHeader: {
     fontSize: 12,
     fontWeight: "800",
-    color: colors.muted,
+    color: theme.muted,
     marginTop: 24,
     marginBottom: 8,
     marginLeft: 4,
@@ -229,7 +320,7 @@ const styles = StyleSheet.create({
     flex: 1
   },
   rowLabel: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 15,
     fontWeight: "600"
   },
@@ -245,20 +336,34 @@ const styles = StyleSheet.create({
     gap: 12
   },
   languageLabel: {
-    color: colors.text,
+    color: theme.text,
     fontWeight: "600",
     fontSize: 15
   },
   languageValue: {
-    color: colors.primary,
+    color: theme.primary,
     fontWeight: "bold",
     fontSize: 15
   },
   versionInfo: {
     textAlign: "center",
-    color: colors.muted,
+    color: theme.muted,
     fontSize: 12,
     marginTop: 16,
     fontWeight: "600"
+  },
+  themeOption: {
+    flex: 1,
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 14,
+    borderWidth: 1,
+    borderRadius: 12
+  },
+  themeOptionText: {
+    fontSize: 14,
+    fontWeight: "700"
   }
 });

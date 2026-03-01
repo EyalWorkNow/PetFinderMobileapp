@@ -44,6 +44,7 @@ import {
   ShieldTick
 } from "iconsax-react-native";
 import { AppButton, AppCard, AppInput, colors, useThemeColors } from "../components/ui";
+import { useTranslation } from "../i18n/useTranslation";
 import { useAuth } from "../context/AuthContext";
 import { useSettings } from "../context/SettingsContext";
 import { useAcoustics } from "../context/AudioContext";
@@ -111,6 +112,9 @@ export function CreatePostWizardScreen({ navigation, route }: Props) {
   const { playSound } = useAcoustics();
   const { awardPoints } = useGuardian();
   const theme = useThemeColors();
+  const { t } = useTranslation();
+  const colors = theme; // Keep alias for legacy variables inside this file
+  const styles = getStyles(colors);
   const [step, setStep] = useState(0);
   const [photos, setPhotos] = useState<LocalPhoto[]>([]);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
@@ -144,14 +148,14 @@ export function CreatePostWizardScreen({ navigation, route }: Props) {
 
   const fadeStep = (next: number) => {
     Animated.parallel([
-      Animated.timing(stepAnim, { toValue: 0, duration: 200, useNativeDriver: true }),
-      Animated.timing(slideAnim, { toValue: next > step ? -15 : 15, duration: 200, useNativeDriver: true })
+      Animated.timing(stepAnim, { toValue: 0, duration: 250, useNativeDriver: true }),
+      Animated.timing(slideAnim, { toValue: next > step ? -25 : 25, duration: 250, useNativeDriver: true })
     ]).start(() => {
       setStep(next);
-      slideAnim.setValue(next > step ? 15 : -15);
+      slideAnim.setValue(next > step ? 25 : -25);
       Animated.parallel([
-        Animated.timing(stepAnim, { toValue: 1, duration: 250, useNativeDriver: true }),
-        Animated.timing(slideAnim, { toValue: 0, duration: 250, useNativeDriver: true })
+        Animated.timing(stepAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
+        Animated.spring(slideAnim, { toValue: 0, tension: 50, friction: 8, useNativeDriver: true })
       ]).start();
     });
   };
@@ -342,12 +346,27 @@ export function CreatePostWizardScreen({ navigation, route }: Props) {
       Alert.alert("Permission needed", "Location permission is required.");
       return;
     }
-    const location = await Location.getCurrentPositionAsync({
-      accuracy: Location.Accuracy.Highest,
-    });
-    setMarkerLat(location.coords.latitude);
-    setMarkerLng(location.coords.longitude);
-    resolveAddress(location.coords.latitude, location.coords.longitude);
+
+    try {
+      // First try to get high accuracy position with a short timeout
+      const location = await Promise.race([
+        Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Highest }),
+        new Promise<never>((_, reject) => setTimeout(() => reject(new Error("Timeout")), 4000))
+      ]);
+      setMarkerLat(location.coords.latitude);
+      setMarkerLng(location.coords.longitude);
+      resolveAddress(location.coords.latitude, location.coords.longitude);
+    } catch (e) {
+      // Fallback to balanced accuracy if high accuracy times out
+      try {
+        const fallbackLocation = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+        setMarkerLat(fallbackLocation.coords.latitude);
+        setMarkerLng(fallbackLocation.coords.longitude);
+        resolveAddress(fallbackLocation.coords.latitude, fallbackLocation.coords.longitude);
+      } catch (fallbackError) {
+        Alert.alert("Location Error", "Could not fetch your location. Please check your GPS signal.");
+      }
+    }
   }
 
   function toggleColor(color: string) {
@@ -422,7 +441,7 @@ export function CreatePostWizardScreen({ navigation, route }: Props) {
         <View style={styles.premiumHeader}>
           <View style={styles.headerTop}>
             <Text style={styles.premiumTitle}>
-              {route.params.type === "LOST" ? "Report Lost" : "Report Found"} {route.params.petType}
+              {route.params.type === "LOST" ? t("ReportLost") || "Report Lost" : t("ReportFound") || "Report Found"} {route.params.petType}
             </Text>
             <Pressable onPress={() => navigation.goBack()} style={styles.closeBtn}>
               <ArrowLeft2 size={24} color={theme.text} />
@@ -431,11 +450,11 @@ export function CreatePostWizardScreen({ navigation, route }: Props) {
 
           <View style={styles.stepIndicatorRow}>
             {[
-              { icon: <Camera size={18} variant={step >= 0 ? "Bulk" : "Outline"} />, label: "Photos" },
-              { icon: <InfoCircle size={18} variant={step >= 1 ? "Bulk" : "Outline"} />, label: "Info" },
-              { icon: <LocationIcon size={18} variant={step >= 2 ? "Bulk" : "Outline"} />, label: "Map" },
-              { icon: <Sms size={18} variant={step >= 3 ? "Bulk" : "Outline"} />, label: "Contact" },
-              { icon: <TickCircle size={18} variant={step >= 4 ? "Bulk" : "Outline"} />, label: "Confirm" }
+              { icon: <Camera size={18} variant={step >= 0 ? "Bulk" : "Outline"} />, label: t("Photos") || "Photos" },
+              { icon: <InfoCircle size={18} variant={step >= 1 ? "Bulk" : "Outline"} />, label: t("Info") || "Info" },
+              { icon: <LocationIcon size={18} variant={step >= 2 ? "Bulk" : "Outline"} />, label: t("Map") || "Map" },
+              { icon: <Sms size={18} variant={step >= 3 ? "Bulk" : "Outline"} />, label: t("Contact") || "Contact" },
+              { icon: <TickCircle size={18} variant={step >= 4 ? "Bulk" : "Outline"} />, label: t("Confirm") || "Confirm" }
             ].map((s, i) => (
               <View key={i} style={[styles.stepItem, i === step && styles.stepItemActive]}>
                 <View style={[styles.stepIconContainer, i <= step && { backgroundColor: theme.primary }]}>
@@ -471,14 +490,14 @@ export function CreatePostWizardScreen({ navigation, route }: Props) {
         >
           {step === 0 ? (
             <AppCard>
-              <Text style={styles.sectionTitle}>Add a clear photo</Text>
-              <Text style={styles.helper}>At least one photo is required to help us find matches based on visual similarity.</Text>
+              <Text style={styles.sectionTitle}>{t("AddClearPhoto") || "Add a clear photo"}</Text>
+              <Text style={styles.helper}>{t("PhotoRequiredHelper") || "At least one photo is required to help us find matches based on visual similarity."}</Text>
 
               <View style={styles.dropzone}>
-                <Text style={styles.dropzoneText}>Tap to add photos</Text>
+                <Text style={styles.dropzoneText}>{t("TapToAddPhotos") || "Tap to add photos"}</Text>
                 <View style={styles.row}>
-                  <AppButton label="Gallery" onPress={pickFromLibrary} tone="secondary" />
-                  <AppButton label="Camera" onPress={pickFromCamera} tone="secondary" />
+                  <AppButton label={t("Gallery") || "Gallery"} onPress={pickFromLibrary} tone="secondary" />
+                  <AppButton label={t("Camera") || "Camera"} onPress={pickFromCamera} tone="secondary" />
                 </View>
               </View>
 
@@ -520,7 +539,7 @@ export function CreatePostWizardScreen({ navigation, route }: Props) {
                     ))}
                   </ScrollView>
                   <AppButton
-                    label={isAnalyzingAI ? "Analyzing..." : "AI Smart Detect ✨"}
+                    label={isAnalyzingAI ? (t("Analyzing") || "Analyzing...") : (t("AISmartDetect") || "AI Smart Detect ✨")}
                     onPress={runAIAnalysis}
                     tone="primary"
                     loading={isAnalyzingAI}
@@ -533,7 +552,7 @@ export function CreatePostWizardScreen({ navigation, route }: Props) {
                       name="firstPhotoTakenAt"
                       render={({ field, fieldState }) => (
                         <AppInput
-                          label="Date Taken"
+                          label={t("DateTaken") || "Date Taken"}
                           icon={<Timer size={20} color={theme.primary} />}
                           value={field.value}
                           onChangeText={field.onChange}
@@ -549,16 +568,16 @@ export function CreatePostWizardScreen({ navigation, route }: Props) {
 
           {step === 1 ? (
             <View style={styles.glassCard}>
-              <Text style={styles.sectionTitle}>Pet details</Text>
-              <Text style={styles.helper}>Tell us more about the pet.</Text>
+              <Text style={styles.sectionTitle}>{t("PetDetails") || "Pet details"}</Text>
+              <Text style={styles.helper}>{t("PetDetailsHelper") || "Tell us more about the pet."}</Text>
 
               <Controller
                 control={form.control}
                 name="title"
                 render={({ field, fieldState }) => (
                   <AppInput
-                    label="Title"
-                    placeholder="e.g. Friendly Golden Retriever"
+                    label={t("Title") || "Title"}
+                    placeholder={t("TitlePlaceholder") || "e.g. Friendly Golden Retriever"}
                     icon={<DocumentText size={20} color={theme.primary} />}
                     value={field.value}
                     onChangeText={field.onChange}
@@ -572,8 +591,8 @@ export function CreatePostWizardScreen({ navigation, route }: Props) {
                 name="breed"
                 render={({ field, fieldState }) => (
                   <AppInput
-                    label="Breed"
-                    placeholder="e.g. Mixed breed"
+                    label={t("Breed") || "Breed"}
+                    placeholder={t("BreedPlaceholder") || "e.g. Mixed breed"}
                     icon={<Hierarchy size={20} color={theme.primary} />}
                     value={field.value}
                     onChangeText={field.onChange}
@@ -582,7 +601,7 @@ export function CreatePostWizardScreen({ navigation, route }: Props) {
                 )}
               />
 
-              <Text style={styles.fieldLabel}>Estimated Size</Text>
+              <Text style={styles.fieldLabel}>{t("EstimatedSize") || "Estimated Size"}</Text>
               <View style={styles.visualSizeRow}>
                 {(["S", "M", "L", "UNKNOWN"] as const).map((s) => {
                   const isActive = form.watch("size") === s;
@@ -603,8 +622,8 @@ export function CreatePostWizardScreen({ navigation, route }: Props) {
                 })}
               </View>
 
-              <Text style={styles.fieldLabel}>Core Colors</Text>
-              <View style={styles.rowWrap}>
+              <Text style={styles.fieldLabel}>{t("CoreColors") || "Core Colors"}</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scrollRow}>
                 {PRESET_COLORS.map((c) => {
                   const isActive = selectedColors.includes(c.name);
                   return (
@@ -630,31 +649,31 @@ export function CreatePostWizardScreen({ navigation, route }: Props) {
                     </Pressable>
                   );
                 })}
-              </View>
+              </ScrollView>
 
               <AppInput
-                label="Additional colors"
-                placeholder="Comma separated"
+                label={t("AdditionalColors") || "Additional colors"}
+                placeholder={t("CommaSeparated") || "Comma separated"}
                 icon={<Colorfilter size={20} color={theme.primary} />}
                 value={customColors}
                 onChangeText={setCustomColors}
               />
 
-              <Text style={styles.fieldLabel}>Collar / Harness</Text>
+              <Text style={styles.fieldLabel}>{t("CollarHarness") || "Collar / Harness"}</Text>
               <View style={styles.row}>
                 <Pressable
                   onPress={() => form.setValue("collar", true)}
                   style={[styles.visualSizeBtn, { flex: 1 }, form.watch("collar") && styles.visualSizeBtnActive]}
                 >
                   <TickCircleBulk size={24} color={form.watch("collar") ? theme.primary : theme.muted} />
-                  <Text style={styles.visualSizeText}>Yes</Text>
+                  <Text style={styles.visualSizeText}>{t("Yes") || "Yes"}</Text>
                 </Pressable>
                 <Pressable
                   onPress={() => form.setValue("collar", false)}
                   style={[styles.visualSizeBtn, { flex: 1 }, !form.watch("collar") && styles.visualSizeBtnActive]}
                 >
                   <ArrowLeft2 size={24} color={!form.watch("collar") ? theme.primary : theme.muted} />
-                  <Text style={styles.visualSizeText}>No</Text>
+                  <Text style={styles.visualSizeText}>{t("No") || "No"}</Text>
                 </Pressable>
               </View>
 
@@ -664,8 +683,8 @@ export function CreatePostWizardScreen({ navigation, route }: Props) {
                   name="collarColor"
                   render={({ field }) => (
                     <AppInput
-                      label="Collar color"
-                      placeholder="e.g. Red"
+                      label={t("CollarColor") || "Collar color"}
+                      placeholder={t("CollarColorPlaceholder") || "e.g. Red"}
                       icon={<Hashtag size={20} color={theme.primary} />}
                       value={field.value}
                       onChangeText={field.onChange}
@@ -679,8 +698,8 @@ export function CreatePostWizardScreen({ navigation, route }: Props) {
                 name="marksText"
                 render={({ field }) => (
                   <AppInput
-                    label="Distinctive marks"
-                    placeholder="e.g. White spot on tail"
+                    label={t("DistinctiveMarks") || "Distinctive marks"}
+                    placeholder={t("DistinctiveMarksPlaceholder") || "e.g. White spot on tail"}
                     icon={<Maximize4 size={20} color={theme.primary} />}
                     value={field.value}
                     onChangeText={field.onChange}
@@ -688,7 +707,7 @@ export function CreatePostWizardScreen({ navigation, route }: Props) {
                 )}
               />
 
-              <View style={styles.rowWrap}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scrollRow}>
                 {MARK_CHIPS.map((chip) => (
                   <Pressable
                     key={chip.label}
@@ -699,14 +718,14 @@ export function CreatePostWizardScreen({ navigation, route }: Props) {
                     <Text style={styles.pillText}>{chip.label}</Text>
                   </Pressable>
                 ))}
-              </View>
+              </ScrollView>
             </View>
           ) : null}
 
           {step === 2 ? (
             <View style={styles.glassCard}>
-              <Text style={styles.sectionTitle}>Location & details</Text>
-              <Text style={styles.helper}>Where was the pet last seen?</Text>
+              <Text style={styles.sectionTitle}>{t("LocationDetails") || "Location & details"}</Text>
+              <Text style={styles.helper}>{t("WhereWasThePetLastSeen") || "Where was the pet last seen?"}</Text>
 
               <View style={styles.mapContainer}>
                 <MapView
@@ -730,9 +749,9 @@ export function CreatePostWizardScreen({ navigation, route }: Props) {
                 </MapView>
                 <Pressable
                   onPress={setCurrentLocation}
-                  style={[styles.closeBtn, { position: "absolute", bottom: 40, right: 10, backgroundColor: theme.surface, elevation: 8, shadowColor: theme.primary, shadowOpacity: 0.2, shadowRadius: 10 }]}
+                  style={[styles.closeBtn, { position: "absolute", bottom: 20, right: 20, backgroundColor: theme.surface, elevation: 12, shadowColor: "#000", shadowOpacity: 0.3, shadowRadius: 15, width: 56, height: 56, borderRadius: 28, alignItems: "center", justifyContent: "center" }]}
                 >
-                  <Gps size={22} color={theme.primary} variant="Bold" />
+                  <Gps size={28} color={theme.primary} variant="Bold" />
                 </Pressable>
               </View>
 
@@ -741,10 +760,10 @@ export function CreatePostWizardScreen({ navigation, route }: Props) {
                 name="lastSeenLabel"
                 render={({ field, fieldState }) => (
                   <AppInput
-                    label="Last seen location"
+                    label={t("LastSeenLocation") || "Last seen location"}
                     value={field.value}
                     onChangeText={field.onChange}
-                    placeholder="Street, park, neighborhood"
+                    placeholder={t("LastSeenLocationPlaceholder") || "Street, park, neighborhood"}
                     icon={<SearchNormal1 size={20} color={theme.primary} />}
                     error={fieldState.error?.message}
                   />
@@ -756,8 +775,8 @@ export function CreatePostWizardScreen({ navigation, route }: Props) {
                 name="lastSeenTime"
                 render={({ field, fieldState }) => (
                   <AppInput
-                    label="When was it seen?"
-                    placeholder="e.g. Today at 2 PM"
+                    label={t("WhenWasItSeen") || "When was it seen?"}
+                    placeholder={t("WhenWasItSeenPlaceholder") || "e.g. Today at 2 PM"}
                     value={field.value}
                     onChangeText={field.onChange}
                     icon={<Clock size={20} color={theme.primary} />}
@@ -768,7 +787,7 @@ export function CreatePostWizardScreen({ navigation, route }: Props) {
 
               <View style={styles.row}>
                 <Gps size={20} color={theme.primary} variant="Bulk" />
-                <Text style={styles.fieldLabel}>Search Radius: {Math.round(form.watch("radiusKm") * 10) / 10} km</Text>
+                <Text style={styles.fieldLabel}>{t("SearchRadius") || "Search Radius"}: {Math.round(form.watch("radiusKm") * 10) / 10} {t("km") || "km"}</Text>
               </View>
 
               <Controller
@@ -777,7 +796,7 @@ export function CreatePostWizardScreen({ navigation, route }: Props) {
                 render={({ field }) => {
                   const RADIUS_PRESETS = [1, 2, 5, 10, 20];
                   return (
-                    <View style={[styles.rowWrap, { marginTop: 12 }]}>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.scrollRow, { marginTop: 12 }]}>
                       {RADIUS_PRESETS.map((km) => (
                         <Pressable
                           key={km}
@@ -791,25 +810,25 @@ export function CreatePostWizardScreen({ navigation, route }: Props) {
                           ]}
                         >
                           <Text style={[styles.pillText, field.value === km ? styles.pillTextActive : null]}>
-                            {km} km
+                            {km} {t("km") || "km"}
                           </Text>
                         </Pressable>
                       ))}
-                    </View>
+                    </ScrollView>
                   );
                 }}
               />
 
               <View style={{ marginTop: 24, borderTopWidth: 1, borderTopColor: "rgba(0,0,0,0.05)", paddingTop: 20 }}>
                 <AppInput
-                  label="Add sighting notes"
-                  placeholder="Any extra details..."
+                  label={t("AddSightingNotes") || "Add sighting notes"}
+                  placeholder={t("AddSightingNotesPlaceholder") || "Any extra details..."}
                   icon={<DocumentText size={20} color={theme.primary} />}
                   value={sightingNote}
                   onChangeText={setSightingNote}
                 />
                 <AppButton
-                  label="Log this sighting"
+                  label={t("LogThisSighting") || "Log this sighting"}
                   tone="secondary"
                   onPress={addSighting}
                   icon={<TickCircle size={18} color={theme.primary} />}
@@ -833,15 +852,15 @@ export function CreatePostWizardScreen({ navigation, route }: Props) {
 
           {step === 3 ? (
             <View style={styles.glassCard}>
-              <Text style={styles.sectionTitle}>Contact & privacy</Text>
-              <Text style={styles.helper}>How should people reach you?</Text>
+              <Text style={styles.sectionTitle}>{t("ContactPrivacy") || "Contact & privacy"}</Text>
+              <Text style={styles.helper}>{t("ContactHelper") || "How should people reach you?"}</Text>
 
-              <Text style={styles.fieldLabel}>Preferred contact channel</Text>
+              <Text style={styles.fieldLabel}>{t("PreferredContactChannel") || "Preferred contact channel"}</Text>
               <View style={styles.rowWrap}>
                 {[
-                  { id: "PHONE", label: "Call", icon: <Call size={18} /> },
+                  { id: "PHONE", label: t("Call") || "Call", icon: <Call size={18} /> },
                   { id: "WHATSAPP", label: "WhatsApp", icon: <Sms size={18} /> },
-                  { id: "IN_APP", label: "In-App Chat", icon: <Status size={18} /> }
+                  { id: "IN_APP", label: t("InAppChat") || "In-App Chat", icon: <Status size={18} /> }
                 ].map((item) => (
                   <Pressable
                     key={item.id}
@@ -864,12 +883,12 @@ export function CreatePostWizardScreen({ navigation, route }: Props) {
                 name="contactPhone"
                 render={({ field }) => (
                   <AppInput
-                    label="Contact phone number"
+                    label={t("ContactPhoneNumber") || "Contact phone number"}
                     value={field.value}
                     onChangeText={field.onChange}
                     keyboardType="phone-pad"
                     icon={<Call size={20} color={theme.primary} />}
-                    placeholder="+972-50-000-0000"
+                    placeholder={t("PhoneNumberPlaceholder") || "+972-50-000-0000"}
                   />
                 )}
               />
@@ -881,11 +900,11 @@ export function CreatePostWizardScreen({ navigation, route }: Props) {
                   </View>
                   <View style={{ flex: 1 }}>
                     <SwitchRow
-                      label="Hide phone number"
+                      label={t("HidePhoneNumber") || "Hide phone number"}
                       value={form.watch("hidePhone")}
                       onValueChange={(value) => form.setValue("hidePhone", value)}
                     />
-                    <Text style={styles.privacyDesc}>Only revealed to verified users</Text>
+                    <Text style={styles.privacyDesc}>{t("HidePhoneDesc") || "Only revealed to verified users"}</Text>
                   </View>
                 </View>
 
@@ -895,11 +914,11 @@ export function CreatePostWizardScreen({ navigation, route }: Props) {
                   </View>
                   <View style={{ flex: 1 }}>
                     <SwitchRow
-                      label="Safe location mode"
+                      label={t("SafeLocationMode") || "Safe location mode"}
                       value={form.watch("showApproximateLocation")}
                       onValueChange={(value) => form.setValue("showApproximateLocation", value)}
                     />
-                    <Text style={styles.privacyDesc}>Shows a 500m area instead of pinpoint</Text>
+                    <Text style={styles.privacyDesc}>{t("SafeLocationDesc") || "Shows a 500m area instead of pinpoint"}</Text>
                   </View>
                 </View>
               </View>
@@ -911,30 +930,29 @@ export function CreatePostWizardScreen({ navigation, route }: Props) {
               <View style={styles.reviewHeader}>
                 <TickCircleBulk size={48} color={theme.success} variant="Bulk" />
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.sectionTitle}>Ready to Blast!</Text>
-                  <Text style={styles.helper}>We'll notify everyone nearby immediately.</Text>
+                  <Text style={styles.sectionTitle}>{t("ReadyToBlast") || "Ready to Blast!"}</Text>
+                  <Text style={styles.helper}>{t("ReadyToBlastHelper") || "We'll notify everyone nearby immediately."}</Text>
                 </View>
               </View>
 
-              <View style={[styles.reviewGrid, { gap: 12 }]}>
-                <ReviewCard icon={<Camera size={20} color={theme.primary} variant="Bulk" />} label="Photos" value={`${photos.length} photos`} />
-                <ReviewCard icon={<InfoCircle size={20} color={theme.primary} variant="Bulk" />} label="Type" value={route.params.type} />
-                <ReviewCard icon={<Tag size={20} color={theme.primary} variant="Bulk" />} label="Title" value={form.watch("title")} />
-                <ReviewCard icon={<Hierarchy size={20} color={theme.primary} variant="Bulk" />} label="Breed" value={form.watch("breed") || "Unknown"} />
-                <ReviewCard icon={<Maximize4 size={20} color={theme.primary} variant="Bulk" />} label="Size" value={form.watch("size")} />
-                <ReviewCard icon={<Gps size={20} color={theme.primary} variant="Bulk" />} label="Radius" value={`${form.watch("radiusKm")} km`} />
-                <ReviewCard icon={<Status size={20} color={theme.primary} variant="Bulk" />} label="Method" value={form.watch("contactMethod")} />
+              <View style={styles.reviewGrid}>
+                <ReviewCard icon={<Camera size={24} color={theme.primary} variant="Bulk" />} label={t("Photos") || "Photos"} value={`${photos.length} ${t("PhotosAdded") || "photos added"}`} />
+                <ReviewCard icon={<InfoCircle size={24} color={theme.primary} variant="Bulk" />} label={t("Type") || "Type"} value={route.params.type === "LOST" ? (t("LostPet") || "Lost Pet") : (t("FoundPet") || "Found Pet")} />
+                <ReviewCard icon={<Tag size={24} color={theme.primary} variant="Bulk" />} label={t("Title") || "Title"} value={form.watch("title")} />
+                <ReviewCard icon={<Hierarchy size={24} color={theme.primary} variant="Bulk" />} label={t("Breed") || "Breed"} value={form.watch("breed") || (t("Unknown") || "Unknown")} />
+                <ReviewCard icon={<Gps size={24} color={theme.primary} variant="Bulk" />} label={t("SearchRadius") || "Radius"} value={`${form.watch("radiusKm")} ${t("km") || "km"}`} />
+                <ReviewCard icon={<Status size={24} color={theme.primary} variant="Bulk" />} label={t("Method") || "Method"} value={form.watch("contactMethod")} />
               </View>
 
               <AppButton
-                label="Publish Post Now"
+                label={t("PublishPostNow") || "Publish Post Now"}
                 loading={publishMutation.isPending}
                 style={{ marginTop: 24, height: 64, borderRadius: 20 }}
                 onPress={form.handleSubmit(
                   (values) => publishMutation.mutate(values),
                   (errors) => {
                     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => { });
-                    Alert.alert("Missing Details", "Please fix the errors before publishing.");
+                    Alert.alert(t("MissingDetails") || "Missing Details", t("PleaseFixErrors") || "Please fix the errors before publishing.");
                   }
                 )}
                 icon={<ArrowRight2 size={24} color="#fff" />}
@@ -946,7 +964,7 @@ export function CreatePostWizardScreen({ navigation, route }: Props) {
         <View style={styles.footer}>
           {step > 0 ? (
             <AppButton
-              label="Back"
+              label={t("Back") || "Back"}
               tone="secondary"
               style={styles.footerBtn}
               onPress={() => fadeStep(step - 1)}
@@ -957,7 +975,7 @@ export function CreatePostWizardScreen({ navigation, route }: Props) {
           )}
           {step < 4 ? (
             <AppButton
-              label="Next"
+              label={t("Next") || "Next"}
               style={styles.footerBtn}
               onPress={() => fadeStep(step + 1)}
               icon={<ArrowRight2 size={18} color="#fff" />}
@@ -978,9 +996,9 @@ export function CreatePostWizardScreen({ navigation, route }: Props) {
             </View>
 
             <View style={{ alignItems: "center" }}>
-              <Text style={{ fontSize: 24, fontWeight: "900", color: theme.text, textAlign: "center" }}>AI Match Found! 🚨</Text>
+              <Text style={{ fontSize: 24, fontWeight: "900", color: theme.text, textAlign: "center" }}>{t("AIMatchFound") || "AI Match Found! 🚨"}</Text>
               <Text style={{ color: theme.muted, textAlign: "center", marginTop: 8 }}>
-                Our PetFace AI found a {Math.round((aiMatch?.similarity || 0) * 100)}% similarity with an existing post.
+                {t("AIMatchDesc", { percent: Math.round((aiMatch?.similarity || 0) * 100) })}
               </Text>
             </View>
 
@@ -994,11 +1012,11 @@ export function CreatePostWizardScreen({ navigation, route }: Props) {
 
             <View style={{ width: "100%", gap: 12 }}>
               <AppButton
-                label="View Matches Now"
+                label={t("ViewMatchesNow") || "View Matches Now"}
                 onPress={() => { setShowMatchModal(false); navigation.popToTop(); navigation.navigate("Matches" as any); }}
               />
               <Pressable onPress={() => { setShowMatchModal(false); navigation.popToTop(); }} style={{ alignSelf: "center", padding: 8 }}>
-                <Text style={{ color: theme.muted, fontWeight: "700" }}>Dismiss</Text>
+                <Text style={{ color: theme.muted, fontWeight: "700" }}>{t("Dismiss") || "Dismiss"}</Text>
               </Pressable>
             </View>
           </View>
@@ -1017,6 +1035,8 @@ function SwitchRow({
   value: boolean;
   onValueChange: (value: boolean) => void;
 }) {
+  const colors = useThemeColors();
+  const styles = getStyles(colors);
   return (
     <View style={styles.switchRow}>
       <Text style={styles.switchLabel}>{label}</Text>
@@ -1027,18 +1047,21 @@ function SwitchRow({
 
 function ReviewCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   const theme = useThemeColors();
+  const styles = getStyles(theme);
   return (
     <View style={styles.reviewCard}>
-      <View style={styles.reviewCardIcon}>{icon}</View>
-      <View style={{ flex: 1 }}>
-        <Text style={styles.reviewCardLabel}>{label}</Text>
-        <Text style={styles.reviewCardValue} numberOfLines={1}>{value}</Text>
+      <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+        <View style={styles.reviewCardIcon}>{icon}</View>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.reviewCardLabel}>{label}</Text>
+          <Text style={styles.reviewCardValue} numberOfLines={1}>{value}</Text>
+        </View>
       </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1
   },
@@ -1117,7 +1140,7 @@ const styles = StyleSheet.create({
   content: {
     padding: 20,
     gap: 16,
-    paddingBottom: 150
+    paddingBottom: 220
   },
   sectionTitle: {
     fontSize: 20,
@@ -1134,6 +1157,12 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     gap: 12
+  },
+  scrollRow: {
+    flexDirection: "row",
+    gap: 12,
+    paddingVertical: 4,
+    marginBottom: 12
   },
   rowWrap: {
     flexDirection: "row",
@@ -1195,12 +1224,15 @@ const styles = StyleSheet.create({
     marginBottom: 6
   },
   pill: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderRadius: 20,
     borderWidth: 1.5,
     borderColor: colors.border,
-    backgroundColor: colors.surface
+    backgroundColor: colors.surface,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8
   },
   pillActive: {
     borderColor: colors.primary,
@@ -1252,39 +1284,46 @@ const styles = StyleSheet.create({
     marginBottom: 24
   },
   reviewGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-    justifyContent: "space-between"
+    gap: 12,
+    marginTop: 8,
+    backgroundColor: "rgba(255,255,255,0.4)",
+    borderRadius: 24,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.7)",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10
   },
   reviewCard: {
-    width: "48%",
-    backgroundColor: "rgba(0,0,0,0.02)",
-    padding: 12,
-    borderRadius: 16,
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.03)"
+    justifyContent: "space-between",
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(0,0,0,0.05)"
   },
   reviewCardIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
+    width: 44,
+    height: 44,
+    borderRadius: 14,
     backgroundColor: colors.primarySoft,
     alignItems: "center",
-    justifyContent: "center"
+    justifyContent: "center",
+    marginRight: 16
   },
   reviewCardLabel: {
-    fontSize: 11,
-    fontWeight: "600",
+    fontSize: 12,
+    fontWeight: "700",
     color: colors.muted,
-    textTransform: "uppercase"
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginBottom: 4
   },
   reviewCardValue: {
-    fontSize: 14,
-    fontWeight: "800",
+    fontSize: 16,
+    fontWeight: "900",
     color: colors.text
   },
   glassCard: {
@@ -1308,12 +1347,12 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 16,
-    borderRadius: 20,
+    paddingVertical: 20,
+    borderRadius: 24,
     backgroundColor: "rgba(0,0,0,0.03)",
-    marginHorizontal: 4,
+    marginHorizontal: 6,
     gap: 8,
-    borderWidth: 1.5,
+    borderWidth: 2,
     borderColor: "transparent"
   },
   visualSizeBtnActive: {
@@ -1329,18 +1368,18 @@ const styles = StyleSheet.create({
     color: colors.primary
   },
   colorBubble: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 2,
+    borderWidth: 3,
     borderColor: "transparent"
   },
   colorCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18
+    width: 48,
+    height: 48,
+    borderRadius: 24
   },
   colorTick: {
     position: "absolute",

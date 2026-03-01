@@ -5,6 +5,7 @@
   "packageManager": "pnpm@10.6.1",
   "scripts": {
     "dev": "concurrently \"pnpm --filter @petfind/api dev\" \"pnpm --filter @petfind/mobile dev\"",
+    "dev:tunnel": "concurrently \"pnpm --filter @petfind/api dev\" \"pnpm --filter @petfind/mobile dev:tunnel\"",
     "dev:api": "pnpm --filter @petfind/api dev",
     "dev:mobile": "pnpm --filter @petfind/mobile dev",
     "build": "pnpm -r build",

@@ -3,7 +3,7 @@ import { Text, View } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Map, AddSquare, SearchNormal, User, Setting2, ShieldTick, SafeHome } from "iconsax-react-native";
-import { colors } from "../components/ui";
+import { useThemeColors } from "../components/ui";
 import { useTranslation } from "../i18n/useTranslation";
 import type { CreateStackParamList, MainTabParamList, RootStackParamList } from "./types";
 import { CreatePostWizardScreen } from "../screens/CreatePostWizardScreen";
@@ -31,15 +31,16 @@ function CreatePostNavigator() {
 
 function MainTabs() {
   const { t } = useTranslation();
+  const theme = useThemeColors();
 
   return (
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        headerStyle: { backgroundColor: colors.surface, borderBottomWidth: 0, shadowOpacity: 0 },
+        headerStyle: { backgroundColor: theme.surface, borderBottomWidth: 0, shadowOpacity: 0 },
         headerShadowVisible: false,
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.muted,
+        tabBarActiveTintColor: theme.primary,
+        tabBarInactiveTintColor: theme.muted,
         tabBarShowLabel: true,
         tabBarLabelStyle: { fontSize: 10, fontWeight: "800", marginBottom: 8 },
         tabBarStyle: {
@@ -48,10 +49,10 @@ function MainTabs() {
           left: 16,
           right: 16,
           elevation: 0,
-          backgroundColor: "rgba(255, 255, 255, 0.95)",
+          backgroundColor: theme.surface,
           borderRadius: 35,
           height: 80,
-          shadowColor: colors.primary,
+          shadowColor: theme.primary,
           shadowOffset: { width: 0, height: 12 },
           shadowOpacity: 0.15,
           shadowRadius: 30,
@@ -86,13 +87,13 @@ function MainTabs() {
           tabBarLabel: t("Report"),
           tabBarIcon: ({ color, focused }) => (
             <View style={{
-              backgroundColor: colors.primary,
+              backgroundColor: theme.primary,
               width: 50,
               height: 50,
               borderRadius: 25,
               alignItems: "center",
               justifyContent: "center",
-              shadowColor: colors.accent,
+              shadowColor: theme.accent,
               shadowOffset: { width: 0, height: 4 },
               shadowOpacity: 0.3,
               shadowRadius: 10,

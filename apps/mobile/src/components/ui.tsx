@@ -13,6 +13,22 @@ import {
   type ViewProps
 } from "react-native";
 import * as Haptics from "expo-haptics";
+import { useTheme, type PrimaryColorPreset, type ResolvedTheme } from "../context/ThemeContext";
+
+export const colorPresets: Record<PrimaryColorPreset, { primary: string; primarySoft: string }> = {
+  purple: { primary: "#6366F1", primarySoft: "#E0E7FF" }, // Indigo
+  blue: { primary: "#0EA5E9", primarySoft: "#E0F2FE" },   // Sky / Cyan
+  green: { primary: "#10B981", primarySoft: "#D1FAE5" },  // Emerald
+  orange: { primary: "#F59E0B", primarySoft: "#FEF3C7" }, // Amber
+  rose: { primary: "#F43F5E", primarySoft: "#FFE4E6" }    // Rose/Neon Pink
+};
+export const darkColorPresets: Record<PrimaryColorPreset, { primary: string; primarySoft: string }> = {
+  purple: { primary: "#818CF8", primarySoft: "rgba(129, 140, 248, 0.15)" },
+  blue: { primary: "#38BDF8", primarySoft: "rgba(56, 189, 248, 0.15)" },
+  green: { primary: "#34D399", primarySoft: "rgba(52, 211, 153, 0.15)" },
+  orange: { primary: "#FBBF24", primarySoft: "rgba(251, 191, 36, 0.15)" },
+  rose: { primary: "#FB7185", primarySoft: "rgba(251, 113, 133, 0.15)" }
+};
 
 export const lightColors = {
   bg: "#F8FAFC",
@@ -45,12 +61,16 @@ export const darkColors = {
 };
 
 export function useThemeColors() {
-  const scheme = useColorScheme();
-  return scheme === "dark" ? darkColors : lightColors;
+  const { resolvedTheme, primaryColor } = useTheme();
+  const base = resolvedTheme === "dark" ? darkColors : lightColors;
+  const preset = resolvedTheme === "dark" ? darkColorPresets[primaryColor] : colorPresets[primaryColor];
+
+  // Return a fresh object containing base colors mixed with the user's selected primary accent
+  return { ...base, ...preset };
 }
 
-// Keep the legacy export for compatibility, but recommend useThemeColors
-export const colors = lightColors;
+// Keep the legacy export for compatibility, but recommend useThemeColors. Fallback to light/purple.
+export const colors = { ...lightColors, ...colorPresets.purple };
 
 export function AppCard({ onPress, ...props }: ViewProps & { onPress?: () => void }) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -76,6 +96,7 @@ export function AppCard({ onPress, ...props }: ViewProps & { onPress?: () => voi
   };
 
   const colors = useThemeColors();
+  const styles = getStyles(colors);
   const Container = onPress ? Pressable : View;
 
   return (
@@ -101,6 +122,7 @@ interface AppButtonProps extends PressableProps {
 
 export function AppButton({ label, loading, tone = "primary", style, icon, onPress, ...props }: AppButtonProps) {
   const colors = useThemeColors();
+  const styles = getStyles(colors);
   const palette = tone === "primary"
     ? { backgroundColor: colors.primary, color: "#FFFFFF" }
     : tone === "danger"
@@ -143,6 +165,7 @@ interface AppInputProps extends TextInputProps {
 
 export function AppInput({ label, error, icon, ...props }: AppInputProps) {
   const colors = useThemeColors();
+  const styles = getStyles(colors);
   const [isFocused, setIsFocused] = useState(false);
 
   return (
@@ -182,6 +205,7 @@ export function AppInput({ label, error, icon, ...props }: AppInputProps) {
 
 export function ScreenLoading({ label }: { label: string }) {
   const colors = useThemeColors();
+  const styles = getStyles(colors);
   return (
     <View style={[styles.loadingWrap, { backgroundColor: colors.bg }]}>
       <ActivityIndicator size="large" color={colors.primary} />
@@ -205,6 +229,7 @@ export function SkeletonBox({ width, height, style }: { width?: string | number;
   }, [pulseAnim]);
 
   const colors = useThemeColors();
+  const styles = getStyles(colors);
   return (
     <Animated.View
       style={[{ width: width ?? "100%", height, backgroundColor: colors.border, borderRadius: 8, opacity: pulseAnim }, style]}
@@ -212,7 +237,7 @@ export function SkeletonBox({ width, height, style }: { width?: string | number;
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
     borderRadius: 28,

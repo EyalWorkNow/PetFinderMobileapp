@@ -39,9 +39,10 @@ import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import { useAuth } from "../context/AuthContext";
 import { useAcoustics } from "../context/AudioContext";
 import { apiRequest } from "../lib/api";
-import { AppCard, colors } from "../components/ui";
+import { AppCard, useThemeColors } from "../components/ui";
 import type { MainTabParamList, RootStackParamList } from "../navigation/types";
 import type { PetType, Post, PostType } from "../types/models";
+import { useTranslation } from "../i18n/useTranslation";
 
 const INITIAL_REGION: Region = {
   latitude: 31.5, // Center of Israel roughly
@@ -56,9 +57,12 @@ type Navigation = CompositeNavigationProp<
 >;
 
 export function MapScreen() {
+  const colors = useThemeColors();
+  const styles = getStyles(colors);
   const navigation = useNavigation<Navigation>();
   const auth = useAuth();
   const { playSound } = useAcoustics();
+  const { t } = useTranslation();
   const [region, setRegion] = useState<Region>(INITIAL_REGION);
   const [filterType, setFilterType] = useState<PostType | "ALL">("ALL");
   const [filterPetType, setFilterPetType] = useState<PetType | "ALL">("ALL");
@@ -400,13 +404,13 @@ export function MapScreen() {
                   onPress={() => { playSound("pop"); setFilterType(curr => curr === "LOST" ? "ALL" : "LOST"); }}
                   style={[styles.chip, filterType === "LOST" ? styles.chipActive : null]}
                 >
-                  <Text style={[styles.chipText, filterType === "LOST" ? styles.chipTextActive : null]}>LOST</Text>
+                  <Text style={[styles.chipText, filterType === "LOST" ? styles.chipTextActive : null]}>{t("LOST")}</Text>
                 </Pressable>
                 <Pressable
                   onPress={() => { playSound("pop"); setFilterType(curr => curr === "FOUND" ? "ALL" : "FOUND"); }}
                   style={[styles.chip, filterType === "FOUND" ? styles.chipActive : null]}
                 >
-                  <Text style={[styles.chipText, filterType === "FOUND" ? styles.chipTextActive : null]}>FOUND</Text>
+                  <Text style={[styles.chipText, filterType === "FOUND" ? styles.chipTextActive : null]}>{t("FOUND")}</Text>
                 </Pressable>
               </View>
               <View style={styles.flyoutDivider} />
@@ -428,9 +432,9 @@ export function MapScreen() {
         {timeLapseDays !== null && (
           <View style={styles.timeLapseContainer}>
             <View style={styles.timeLapseHeader}>
-              <Text style={styles.timeLapseTitle}>Scrub Time</Text>
+              <Text style={styles.timeLapseTitle}>{t("ScrubTime")}</Text>
               <Text style={styles.timeLapseValue}>
-                {timeLapseDays === 0 ? "Today" : `${Math.round(timeLapseDays ?? 0)} days ago`}
+                {timeLapseDays === 0 ? t("Today") : `${Math.round(timeLapseDays ?? 0)} ${t("DaysAgo")}`}
               </Text>
             </View>
             {/* Using preset buttons instead of native Slider (not supported in Expo Go) */}
@@ -452,8 +456,8 @@ export function MapScreen() {
               ))}
             </View>
             <View style={styles.timeLapseLabels}>
-              <Text style={styles.timeLapseLabelMin}>Past</Text>
-              <Text style={styles.timeLapseLabelMax}>Present</Text>
+              <Text style={styles.timeLapseLabelMin}>{t("Past")}</Text>
+              <Text style={styles.timeLapseLabelMax}>{t("Present")}</Text>
             </View>
           </View>
         )}
@@ -466,11 +470,11 @@ export function MapScreen() {
             {postsQuery.isLoading ? (
               <View style={styles.loadingRow}>
                 <ActivityIndicator color={colors.primary} />
-                <Text style={styles.summaryText}>Loading posts near you...</Text>
+                <Text style={styles.summaryText}>{t("LoadingPosts")}</Text>
               </View>
             ) : (
               <View style={styles.summaryRow}>
-                <Text style={styles.summaryText}>{displayPosts.length} active posts in map range</Text>
+                <Text style={styles.summaryText}>{displayPosts.length} {t("ActivePostsMapRange")}</Text>
                 <ArrowUp2 size={20} color={colors.primary} variant="Outline" />
               </View>
             )}
@@ -487,7 +491,7 @@ export function MapScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Posts List ({displayPosts.length})</Text>
+              <Text style={styles.modalTitle}>{t("PostsList")} ({displayPosts.length})</Text>
               <Pressable
                 onPress={() => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => { });
@@ -514,7 +518,7 @@ export function MapScreen() {
                 >
                   <View style={styles.listItemContent}>
                     <Text style={styles.listItemTitle}>{item.title}</Text>
-                    <Text style={styles.listItemSub}>{item.type} • {item.petType} • {item.breed || "Unknown Breed"}</Text>
+                    <Text style={styles.listItemSub}>{t(item.type)} • {item.petType} • {item.breed || t("UnknownBreed")}</Text>
                     {item.lastSeen.label && <Text style={styles.listItemLoc} numberOfLines={1}>📍 {item.lastSeen.label}</Text>}
                   </View>
 
@@ -532,7 +536,7 @@ export function MapScreen() {
                 </TouchableOpacity>
               )}
               ListEmptyComponent={
-                <Text style={styles.emptyText}>No posts found in this range.</Text>
+                <Text style={styles.emptyText}>{t("NoPostsFoundRange")}</Text>
               }
             />
           </View>
@@ -558,6 +562,8 @@ export function MapScreen() {
 }
 
 function FloatingActionButton({ icon, active, onPress }: { icon: React.ReactNode; active: boolean; onPress: () => void }) {
+  const colors = useThemeColors();
+  const styles = getStyles(colors);
   return (
     <TouchableOpacity
       activeOpacity={0.7}
@@ -572,7 +578,7 @@ function FloatingActionButton({ icon, active, onPress }: { icon: React.ReactNode
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.bg

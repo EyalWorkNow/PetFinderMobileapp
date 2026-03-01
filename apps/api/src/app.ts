@@ -164,6 +164,16 @@ export async function buildApp(overrides: AppOverrides = {}) {
     return resolved;
   });
 
+  app.delete<{ Params: { id: string } }>("/posts/:id", async (request, reply) => {
+    const user = await requireUser(request, reply);
+    if (!user) {
+      return;
+    }
+
+    const deleted = await postService.deletePost(user.id, request.params.id);
+    return deleted;
+  });
+
   app.get("/matches", async (request, reply) => {
     const user = await requireUser(request, reply);
     if (!user) {

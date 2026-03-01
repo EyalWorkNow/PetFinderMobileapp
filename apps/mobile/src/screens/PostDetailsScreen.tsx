@@ -144,15 +144,32 @@ export function PostDetailsScreen({ route, navigation }: Props) {
     }
   });
 
+  const fetchImageAsBase64 = async (url: string) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      return new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    } catch (e) {
+      console.warn("Base64 conversion error:", e);
+      return url;
+    }
+  };
+
   const generateAndSharePoster = async () => {
     if (!post) return;
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
       const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=petfind://post/${post.id}`;
       const heroPhoto = post.photos && post.photos.length > 0 ? post.photos[0].storagePath : "https://images.unsplash.com/photo-1543466835-00a7907e9de1";
+      const base64Photo = await fetchImageAsBase64(heroPhoto);
 
       const html = generatePosterHtml({
-        imageUrl: heroPhoto,
+        imageUrl: base64Photo,
         title: post.title,
         type: post.type,
         breed: post.breed || t("Unknown"),
@@ -178,7 +195,11 @@ export function PostDetailsScreen({ route, navigation }: Props) {
         }
       });
 
-      const { uri } = await Print.printToFileAsync({ html });
+      const { uri } = await Print.printToFileAsync({
+        html,
+        width: 595,
+        height: 842
+      });
       await Sharing.shareAsync(uri, { UTI: ".pdf", mimeType: "application/pdf" });
     } catch (error) {
       console.error(error);

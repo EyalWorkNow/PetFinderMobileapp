@@ -20,6 +20,7 @@ import { BarkAlertModal } from "../components/ui/BarkAlertModal";
 import { LeaderboardModal } from "../components/ui/LeaderboardModal";
 import { useAcoustics } from "../context/AudioContext";
 import { useState } from "react";
+import { useTranslation } from "../i18n/useTranslation";
 
 export function GuardianScreen() {
     const insets = useSafeAreaInsets();
@@ -32,6 +33,7 @@ export function GuardianScreen() {
 
     const [isLeaderboardVisible, setIsLeaderboardVisible] = useState(false);
     const [isBarkAlertVisible, setIsBarkAlertVisible] = useState(false);
+    const { t } = useTranslation();
 
     const { width } = Dimensions.get("window");
 
@@ -40,12 +42,12 @@ export function GuardianScreen() {
             <LinearGradient colors={[theme.primarySoft, theme.bg]} style={styles.headerGradient}>
                 <View style={[styles.header, { paddingTop: insets.top + 20 }]}>
                     <View>
-                        <Text style={[styles.welcome, { color: theme.muted }]}>Neighborhood Guardian</Text>
+                        <Text style={[styles.welcome, { color: theme.muted }]}>{t("NeighborhoodGuardian")}</Text>
                         <Text style={[styles.tier, { color: theme.text }]}>{tier}</Text>
                     </View>
                     <View style={[styles.streakBadge, { backgroundColor: theme.surface }]}>
                         <Flash size={18} color="#FF9500" variant="Bold" />
-                        <Text style={[styles.streakText, { color: theme.text }]}>{streak} Day Streak</Text>
+                        <Text style={[styles.streakText, { color: theme.text }]}>{streak} {t("DayStreak")}</Text>
                     </View>
                 </View>
 
@@ -53,12 +55,12 @@ export function GuardianScreen() {
                 <View style={styles.progressContainer}>
                     <View style={styles.levelCircle}>
                         <Text style={styles.levelNumber}>{level}</Text>
-                        <Text style={styles.levelLabel}>LEVEL</Text>
+                        <Text style={styles.levelLabel}>{t("LEVEL")}</Text>
                     </View>
                     <View style={{ flex: 1, gap: 8 }}>
                         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                            <Text style={{ color: theme.text, fontWeight: "700" }}>{points} PawPoints</Text>
-                            <Text style={{ color: theme.muted }}>Next: 500</Text>
+                            <Text style={{ color: theme.text, fontWeight: "700" }}>{points} {t("PawPoints")}</Text>
+                            <Text style={{ color: theme.muted }}>{t("NextWithColon")} 500</Text>
                         </View>
                         <View style={styles.progressBarBg}>
                             <View style={[styles.progressBarFill, { width: `${(points % 500) / 5}%`, backgroundColor: theme.primary }]} />
@@ -86,10 +88,10 @@ export function GuardianScreen() {
                     </View>
                     <View style={{ flex: 1 }}>
                         <Text style={[styles.patrolTitle, { color: isPatrolling ? "#fff" : theme.text }]}>
-                            {isPatrolling ? "Patrol Active 📡" : "Start Neighborhood Patrol"}
+                            {isPatrolling ? t("PatrolActive") : t("StartPatrol")}
                         </Text>
                         <Text style={[styles.patrolDesc, { color: isPatrolling ? "rgba(255,255,255,0.8)" : theme.muted }]}>
-                            {isPatrolling ? "Tracking your path to help find nearby pets." : "Scan your surroundings while you walk."}
+                            {isPatrolling ? t("TrackingPathDesc") : t("ScanWalkDesc")}
                         </Text>
                     </View>
                     <View style={[styles.patrolToggle, { backgroundColor: isPatrolling ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.05)" }]}>
@@ -99,64 +101,64 @@ export function GuardianScreen() {
 
                 {/* Bark Alert Simulation Trigger */}
                 <AppButton
-                    label="🚨 Simulate Bark Alert"
+                    label={t("SimulateBarkAlert")}
                     tone="danger"
                     onPress={() => setIsBarkAlertVisible(true)}
                 />
 
                 {/* Safety Guidelines */}
                 <View style={styles.sectionHeader}>
-                    <Text style={[styles.sectionTitle, { color: theme.text }]}>Volunteer Safety Guidelines</Text>
+                    <Text style={[styles.sectionTitle, { color: theme.text }]}>{t("VolunteerSafety")}</Text>
                 </View>
 
                 <View style={styles.guidelinesContainer}>
                     <View style={[styles.guidelineCard, { backgroundColor: theme.dangerSoft, borderColor: theme.danger }]}>
                         <View style={styles.guidelineHeader}>
                             <Danger size={24} color={theme.danger} variant="Bold" />
-                            <Text style={[styles.guidelineTitle, { color: theme.danger }]}>Rabies & Aggression</Text>
+                            <Text style={[styles.guidelineTitle, { color: theme.danger }]}>{t("RabiesAggression")}</Text>
                         </View>
                         <Text style={[styles.guidelineText, { color: theme.text }]}>
-                            If a dog shows signs of rabies (excessive drooling, staggering, unprovoked aggression, or paralysis), <Text style={{ fontWeight: "bold" }}>DO NOT APPROACH.</Text> Distance yourself immediately, warn others, and call animal control or emergency services.
+                            {t("RabiesDesc")}
                         </Text>
                     </View>
 
                     <View style={[styles.guidelineCard, { backgroundColor: "#FEF3C7", borderColor: "#F59E0B" }]}>
                         <View style={styles.guidelineHeader}>
                             <Warning2 size={24} color="#F59E0B" variant="Bold" />
-                            <Text style={[styles.guidelineTitle, { color: "#D97706" }]}>Approach Protocol</Text>
+                            <Text style={[styles.guidelineTitle, { color: "#D97706" }]}>{t("ApproachProtocol")}</Text>
                         </View>
                         <Text style={[styles.guidelineText, { color: theme.text }]}>
-                            Never run towards a stray. Lower your posture, avoid direct eye contact, and let the pet come to you. Use a calm voice. Do not offer food from an open hand if the dog seems highly anxious.
+                            {t("ApproachDesc")}
                         </Text>
                     </View>
 
                     <View style={[styles.guidelineCard, { backgroundColor: theme.primarySoft, borderColor: theme.primary }]}>
                         <View style={styles.guidelineHeader}>
                             <Moon size={24} color={theme.primary} variant="Bold" />
-                            <Text style={[styles.guidelineTitle, { color: theme.primary }]}>Night Operations</Text>
+                            <Text style={[styles.guidelineTitle, { color: theme.primary }]}>{t("NightOperations")}</Text>
                         </View>
                         <Text style={[styles.guidelineText, { color: theme.text }]}>
-                            If searching after dark, always wear reflective clothing and carry a strong flashlight. Stick to well-lit areas, share your live location with a friend, and ideally patrol in pairs.
+                            {t("NightDesc")}
                         </Text>
                     </View>
 
                     <View style={[styles.guidelineCard, { backgroundColor: "rgba(0,0,0,0.03)", borderColor: theme.border }]}>
                         <View style={styles.guidelineHeader}>
                             <Car size={24} color={theme.text} variant="Bold" />
-                            <Text style={[styles.guidelineTitle, { color: theme.text }]}>Traffic & Highways</Text>
+                            <Text style={[styles.guidelineTitle, { color: theme.text }]}>{t("TrafficHighways")}</Text>
                         </View>
                         <Text style={[styles.guidelineText, { color: theme.text }]}>
-                            Never chase a distressed animal into active traffic or highways. A scared pet will run blindly into danger. Your life comes first—report the sighting to local authorities instead.
+                            {t("TrafficDesc")}
                         </Text>
                     </View>
 
                     <View style={[styles.guidelineCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
                         <View style={styles.guidelineHeader}>
                             <LocationTick size={24} color={theme.text} variant="Bold" />
-                            <Text style={[styles.guidelineTitle, { color: theme.text }]}>Private Property</Text>
+                            <Text style={[styles.guidelineTitle, { color: theme.text }]}>{t("PrivateProperty")}</Text>
                         </View>
                         <Text style={[styles.guidelineText, { color: theme.text }]}>
-                            Do not trespass. If you suspect a lost pet is on private property or fenced land, attempt to contact the homeowner or local authorities rather than entering without permission.
+                            {t("PrivatePropertyDesc")}
                         </Text>
                     </View>
                 </View>
@@ -168,15 +170,17 @@ export function GuardianScreen() {
                 >
                     <View style={styles.teaserHeader}>
                         <ShieldTick size={24} color={theme.primary} variant="Bulk" />
-                        <Text style={[styles.teaserTitle, { color: theme.text }]}>Top Guardians Nearby</Text>
+                        <Text style={[styles.teaserTitle, { color: theme.text }]}>{t("TopGuardiansNearby")}</Text>
                     </View>
                     <View style={styles.teaserAvatars}>
-                        {[1, 2, 3, 4].map(i => (
-                            <View key={i} style={[styles.avatarCircle, { backgroundColor: theme.border, marginLeft: i === 1 ? 0 : -10 }]}>
-                                <Text style={{ fontSize: 10 }}>P{i}</Text>
+                        {["TopGuardian1", "TopGuardian2", "TopGuardian3"].map((key, i) => (
+                            <View key={i} style={[styles.avatarCircle, { backgroundColor: theme.primarySoft, borderColor: theme.surface, marginLeft: i === 0 ? 0 : -12 }]}>
+                                <Text style={{ fontSize: 12, color: theme.primary, fontWeight: "900" }}>{t(key as any).charAt(0)}</Text>
                             </View>
                         ))}
-                        <Text style={{ color: theme.muted, fontSize: 12, marginLeft: 8 }}>Join the top 5% this week!</Text>
+                        <Text style={{ color: theme.muted, fontSize: 13, marginLeft: 12, flex: 1, fontWeight: "500" }}>
+                            {["TopGuardian1", "TopGuardian2"].map((k) => t(k as any)).join(", ")} {t("AndMore")}
+                        </Text>
                     </View>
                 </Pressable>
             </ScrollView>

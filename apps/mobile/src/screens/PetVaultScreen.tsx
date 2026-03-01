@@ -18,6 +18,7 @@ import { usePetVault, DashboardTask } from "../context/PetVaultContext";
 import { TaskFormModal } from "../components/petvault/TaskFormModal";
 import { RecordFormModal } from "../components/petvault/RecordFormModal";
 import { EditProfileModal } from "../components/petvault/EditProfileModal";
+import { useTranslation } from "../i18n/useTranslation";
 
 const { width } = Dimensions.get("window");
 
@@ -25,6 +26,7 @@ export function PetVaultScreen() {
     const insets = useSafeAreaInsets();
     const theme = useThemeColors();
     const { profile, records, tasks, healthCondition, nextVetDate } = usePetVault();
+    const { t } = useTranslation();
     const [activeTab, setActiveTab] = useState<"passport" | "health">("passport");
 
     const [isTaskModalVisible, setIsTaskModalVisible] = useState(false);
@@ -40,7 +42,7 @@ export function PetVaultScreen() {
     return (
         <View style={[styles.container, { backgroundColor: theme.bg }]}>
             <View style={[styles.header, { paddingTop: insets.top + 20 }]}>
-                <Text style={[styles.title, { color: theme.text }]}>PetVault Hub</Text>
+                <Text style={[styles.title, { color: theme.text }]}>{t("PetVaultHub")}</Text>
                 {activeTab === "health" ? (
                     <Pressable
                         style={[styles.addBtn, { backgroundColor: theme.primarySoft }]}
@@ -59,14 +61,14 @@ export function PetVaultScreen() {
             </View>
 
             <View style={styles.tabBar}>
-                {(["passport", "health"] as const).map((t) => (
+                {(["passport", "health"] as const).map((tTab) => (
                     <Pressable
-                        key={t}
-                        onPress={() => setActiveTab(t)}
-                        style={[styles.tab, activeTab === t && { borderBottomColor: theme.primary, borderBottomWidth: 3 }]}
+                        key={tTab}
+                        onPress={() => setActiveTab(tTab)}
+                        style={[styles.tab, activeTab === tTab && { borderBottomColor: theme.primary, borderBottomWidth: 3 }]}
                     >
-                        <Text style={[styles.tabText, { color: activeTab === t ? theme.text : theme.muted }]}>
-                            {t === "passport" ? "Digital Passport" : "Health Tracker"}
+                        <Text style={[styles.tabText, { color: activeTab === tTab ? theme.text : theme.muted }]}>
+                            {tTab === "passport" ? t("DigitalPassport") : t("HealthTracker")}
                         </Text>
                     </Pressable>
                 ))}
@@ -81,7 +83,7 @@ export function PetVaultScreen() {
                                 <Pet size={32} color="#fff" />
                                 <View style={styles.verifiedBadge}>
                                     <Verify size={14} color="#fff" variant="Bold" />
-                                    <Text style={styles.verifiedText}>Edit Profile</Text>
+                                    <Text style={styles.verifiedText}>{t("EditProfile")}</Text>
                                 </View>
                             </Pressable>
                             <View style={styles.petCardBody}>
@@ -95,17 +97,17 @@ export function PetVaultScreen() {
                             </View>
                             <View style={styles.petCardFooter}>
                                 <View>
-                                    <Text style={styles.footerLabel}>CHIP ID</Text>
+                                    <Text style={styles.footerLabel}>{t("CHIPID")}</Text>
                                     <Text style={styles.footerVal}>{profile.chipId}</Text>
                                 </View>
                                 <View style={{ alignItems: "flex-end" }}>
-                                    <Text style={styles.footerLabel}>STATUS</Text>
+                                    <Text style={styles.footerLabel}>{t("STATUS")}</Text>
                                     <Text style={styles.footerVal}>{profile.status}</Text>
                                 </View>
                             </View>
                         </LinearGradient>
 
-                        <Text style={[styles.sectionTitle, { color: theme.text }]}>Critical Search Intel</Text>
+                        <Text style={[styles.sectionTitle, { color: theme.text }]}>{t("CriticalSearchIntel")}</Text>
 
                         <View style={styles.intelList}>
                             {records.map((item) => (
@@ -117,8 +119,8 @@ export function PetVaultScreen() {
                                         {item.iconType === "success" && <Record size={20} color={theme.success} variant="Bold" />}
                                     </View>
                                     <View style={{ flex: 1, gap: 2 }}>
-                                        <Text style={[styles.intelLabel, { color: theme.text }]}>{item.label}</Text>
-                                        <Text style={[styles.intelValue, { color: theme.muted }]}>{item.value}</Text>
+                                        <Text style={[styles.intelLabel, { color: theme.text }]}>{t(item.label as any) || item.label}</Text>
+                                        <Text style={[styles.intelValue, { color: theme.muted }]}>{t(item.value as any) || item.value}</Text>
                                     </View>
                                 </AppCard>
                             ))}
@@ -130,17 +132,17 @@ export function PetVaultScreen() {
                             <View style={styles.summaryItem}>
                                 <Health size={28} color="#EF4444" variant="Bulk" />
                                 <Text style={[styles.summaryVal, { color: theme.text }]}>{healthCondition}</Text>
-                                <Text style={[styles.summaryLabel, { color: theme.muted }]}>Condition</Text>
+                                <Text style={[styles.summaryLabel, { color: theme.muted }]}>{t("Condition")}</Text>
                             </View>
                             <View style={[styles.summaryDivider, { backgroundColor: theme.border }]} />
                             <View style={styles.summaryItem}>
                                 <Calendar size={28} color="#3B82F6" variant="Bulk" />
                                 <Text style={[styles.summaryVal, { color: theme.text }]}>{nextVetDate}</Text>
-                                <Text style={[styles.summaryLabel, { color: theme.muted }]}>Next Vet</Text>
+                                <Text style={[styles.summaryLabel, { color: theme.muted }]}>{t("NextVet")}</Text>
                             </View>
                         </View>
 
-                        <Text style={[styles.sectionTitle, { color: theme.text }]}>Upcoming Tasks</Text>
+                        <Text style={[styles.sectionTitle, { color: theme.text }]}>{t("UpcomingTasks")}</Text>
 
                         {tasks.map((task) => (
                             <Pressable

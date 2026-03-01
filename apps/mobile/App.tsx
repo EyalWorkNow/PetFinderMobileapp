@@ -15,6 +15,7 @@ import { OnboardingScreen } from "./src/screens/OnboardingScreen";
 import { ToastProvider } from "./src/context/ToastContext";
 import { GuardianProvider } from "./src/context/GuardianContext";
 import { PetVaultProvider } from "./src/context/PetVaultContext";
+import { ThemeProvider } from "./src/context/ThemeContext";
 import { ScreenLoading } from "./src/components/ui";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -99,19 +100,21 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
-        <SettingsProvider>
-          <AuthProvider>
-            <AudioProvider>
-              <ToastProvider>
-                <GuardianProvider>
-                  <PetVaultProvider>
-                    <AppContent />
-                  </PetVaultProvider>
-                </GuardianProvider>
-              </ToastProvider>
-            </AudioProvider>
-          </AuthProvider>
-        </SettingsProvider>
+        <ThemeProvider>
+          <SettingsProvider>
+            <AuthProvider>
+              <AudioProvider>
+                <ToastProvider>
+                  <GuardianProvider>
+                    <PetVaultProvider>
+                      <AppContent />
+                    </PetVaultProvider>
+                  </GuardianProvider>
+                </ToastProvider>
+              </AudioProvider>
+            </AuthProvider>
+          </SettingsProvider>
+        </ThemeProvider>
       </QueryClientProvider>
     </SafeAreaProvider>
   );

@@ -48,11 +48,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      const { data } = await supabase.auth.getSession();
-      const mapped = sessionToState(data.session);
-      setUserId(mapped.userId);
-      setAccessToken(mapped.accessToken);
-      setIsReady(true);
+      try {
+        // 5s timeout for session check to avoid hanging forever
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("Session check timed out")), 5000)
+        );
+
+        const { data } = await Promise.race([sessionPromise, timeoutPromise]) as any;
+        const mapped = sessionToState(data.session);
+        setUserId(mapped.userId);
+        setAccessToken(mapped.accessToken);
+      } catch (error) {
+        console.warn("[AuthContext] Bootstrap error or timeout:", error);
+        // Fallback to unauthenticated state instead of hanging
+        setUserId(null);
+        setAccessToken(null);
+      } finally {
+        setIsReady(true);
+      }
 
       const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
         const state = sessionToState(session);

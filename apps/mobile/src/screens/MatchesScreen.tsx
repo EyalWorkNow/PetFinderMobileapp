@@ -14,6 +14,7 @@ import { apiRequest } from "../lib/api";
 import { Confetti } from "../components/Confetti";
 import type { MatchItem } from "../types/models";
 import type { RootStackParamList } from "../navigation/types";
+import { useTranslation } from "../i18n/useTranslation";
 
 const { width, height } = Dimensions.get("window");
 const SWIPE_THRESHOLD = 120;
@@ -27,6 +28,7 @@ export function MatchesScreen() {
   const queryClient = useQueryClient();
   const theme = useThemeColors();
   const { showToast } = useToast();
+  const { t } = useTranslation();
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showCelebration, setShowCelebration] = useState(false);
@@ -93,7 +95,7 @@ export function MatchesScreen() {
       if (item.band === "HIGH") {
         triggerCelebration();
       } else {
-        showToast({ message: "Match Saved ✅", durationMs: 2000 });
+        showToast({ message: t("MatchSaved"), durationMs: 2000 });
       }
       // Real app would make API call to save here
     } else {
@@ -130,9 +132,9 @@ export function MatchesScreen() {
       return (
         <View style={styles.emptyWrap}>
           <Radar size={80} color={theme.primary} variant="Bulk" style={{ marginBottom: 12 }} />
-          <Text style={[styles.empty, { color: theme.text }]}>Radar is Clear</Text>
+          <Text style={[styles.empty, { color: theme.text }]}>{t("RadarIsClear")}</Text>
           <Text style={[styles.emptySub, { color: theme.muted }]}>
-            We've analyzed all current reports. We will ping you if new matches arise.
+            {t("RadarClearSub")}
           </Text>
         </View>
       );
@@ -201,10 +203,10 @@ export function MatchesScreen() {
             {isTopCard && (
               <>
                 <Animated.View style={[styles.likeIndicator, { opacity: likeOpacity, borderColor: theme.success }]}>
-                  <Text style={[styles.indicatorText, { color: theme.success }]}>CONNECT</Text>
+                  <Text style={[styles.indicatorText, { color: theme.success }]}>{t("CONNECT")}</Text>
                 </Animated.View>
                 <Animated.View style={[styles.nopeIndicator, { opacity: nopeOpacity, borderColor: theme.danger }]}>
-                  <Text style={[styles.indicatorText, { color: theme.danger }]}>DISMISS</Text>
+                  <Text style={[styles.indicatorText, { color: theme.danger }]}>{t("DISMISS")}</Text>
                 </Animated.View>
               </>
             )}
@@ -213,7 +215,7 @@ export function MatchesScreen() {
               <View style={styles.cardHeader}>
                 <View style={[styles.badge, item.band === "HIGH" ? { backgroundColor: theme.dangerSoft } : { backgroundColor: "#FEF3C7" }]}>
                   <Text style={[styles.badgeText, { color: item.band === "HIGH" ? theme.danger : "#B45309" }]}>
-                    {item.band} MATCH • {Math.round(item.score * 100)}%
+                    {item.band} {t("MATCH")} • {Math.round(item.score * 100)}%
                   </Text>
                 </View>
               </View>
@@ -225,7 +227,7 @@ export function MatchesScreen() {
                 <View style={styles.aiReasoning}>
                   <MagicStar size={16} color="#FBBF24" variant="Bulk" />
                   <Text style={styles.aiText} numberOfLines={2}>
-                    AI linked via: {post.colors?.join(", ")} {post.lastSeen?.label ? `near ${post.lastSeen.label}` : ""}
+                    {t("AILinkedVia")} {post.colors?.join(", ")} {post.lastSeen?.label ? `${t("near")} ${post.lastSeen.label}` : ""}
                   </Text>
                 </View>
               </View>
