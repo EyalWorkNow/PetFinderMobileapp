@@ -109,7 +109,7 @@ export function CreatePostWizardScreen({ navigation, route }: Props) {
   const settings = useSettings();
   const queryClient = useQueryClient();
   const { playSound } = useAcoustics();
-  const { awardPoints, updateMissionProgress } = useGuardian();
+  const { awardPoints } = useGuardian();
   const theme = useThemeColors();
   const [step, setStep] = useState(0);
   const [photos, setPhotos] = useState<LocalPhoto[]>([]);
@@ -249,7 +249,6 @@ export function CreatePostWizardScreen({ navigation, route }: Props) {
 
       // Guardian Rewards
       awardPoints(100, "Publishing a quality post");
-      updateMissionProgress("2", 1);
 
       // AI MATCHMAKING SIMULATION
       const allPosts = queryClient.getQueryData<any[]>(["posts"]) || [];
