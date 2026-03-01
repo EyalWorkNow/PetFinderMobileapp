@@ -11,9 +11,10 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
   const url = `${appRuntimeConfig.apiUrl}${path}`;
   console.log(`[API] Requesting: ${options.method ?? "GET"} ${url}`);
 
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json"
-  };
+  const headers: Record<string, string> = {};
+  if (options.body !== undefined) {
+    headers["Content-Type"] = "application/json";
+  }
 
   if (options.accessToken) {
     headers.Authorization = `Bearer ${options.accessToken}`;
@@ -23,9 +24,7 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
     headers["x-user-id"] = options.userId;
   }
 
-  const hasBody = options.body !== undefined;
-  // If it's a POST but empty body, supply an empty array or object so Fastify doesn't crash on empty JSON.
-  const fetchBody = hasBody ? JSON.stringify(options.body) : (options.method === "POST" ? "{}" : undefined);
+  const fetchBody = options.body !== undefined ? JSON.stringify(options.body) : undefined;
 
   const response = await fetch(url, {
     method: options.method ?? "GET",
