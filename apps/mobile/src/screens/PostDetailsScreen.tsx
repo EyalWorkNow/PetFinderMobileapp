@@ -25,6 +25,7 @@ import {
 } from "iconsax-react-native";
 import { useAuth } from "../context/AuthContext";
 import { useAcoustics } from "../context/AudioContext";
+import { useTranslation } from "../i18n/useTranslation";
 import { apiRequest } from "../lib/api";
 import { AppButton, colors, darkColors } from "../components/ui";
 import { Confetti } from "../components/Confetti";
@@ -43,6 +44,7 @@ export function PostDetailsScreen({ route, navigation }: Props) {
   const [showConfetti, setShowConfetti] = useState(false);
   const [isBroadcasting, setIsBroadcasting] = useState(false);
   const insets = useSafeAreaInsets();
+  const { t, isRTL } = useTranslation();
 
   const { width: windowWidth, height: windowHeight } = Dimensions.get("window");
 
@@ -153,15 +155,27 @@ export function PostDetailsScreen({ route, navigation }: Props) {
         imageUrl: heroPhoto,
         title: post.title,
         type: post.type,
-        breed: post.breed || "Unknown",
+        breed: post.breed || t("Unknown"),
         size: post.size,
         color: (post.colors || []).join(", "),
         lastSeenTime: new Date(post.lastSeenTime).toLocaleString(),
-        lastSeenPlace: post.lastSeen.label || "Unknown",
+        lastSeenPlace: post.lastSeen.label || t("Unknown"),
         contactMethod: post.contactMethod,
         contactPhone: post.contactPhone || undefined,
         qrData: qrUrl,
-        primaryColor: theme.primary
+        primaryColor: theme.primary,
+        labels: {
+          titleText: post.type === "LOST" ? t("PosterLostTitle") : t("PosterFoundTitle"),
+          breedLabel: t("Breed"),
+          colorLabel: t("Color"),
+          lastSeenLabel: t("LastSeen"),
+          whenLabel: t("When"),
+          contactTitle: t("Contact"),
+          preferredMethod: t("PreferredMethod"),
+          scanLabel: t("ScanToReport"),
+          tagline: t("PosterTagline"),
+          isRTL,
+        }
       });
 
       const { uri } = await Print.printToFileAsync({ html });

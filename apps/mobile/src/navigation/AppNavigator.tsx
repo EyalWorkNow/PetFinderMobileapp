@@ -4,6 +4,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Map, AddSquare, SearchNormal, User, Setting2, ShieldTick, SafeHome } from "iconsax-react-native";
 import { colors } from "../components/ui";
+import { useTranslation } from "../i18n/useTranslation";
 import type { CreateStackParamList, MainTabParamList, RootStackParamList } from "./types";
 import { CreatePostWizardScreen } from "../screens/CreatePostWizardScreen";
 import { MapScreen } from "../screens/MapScreen";
@@ -29,6 +30,8 @@ function CreatePostNavigator() {
 }
 
 function MainTabs() {
+  const { t } = useTranslation();
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -63,7 +66,7 @@ function MainTabs() {
         component={MapScreen}
         options={{
           headerShown: true,
-          tabBarLabel: "מפה",
+          tabBarLabel: t("Map"),
           tabBarIcon: ({ color, focused }) => <Map size={focused ? 28 : 24} color={color} variant={focused ? "Bold" : "Outline"} />
         }}
       />
@@ -71,7 +74,7 @@ function MainTabs() {
         name="Guardian"
         component={GuardianScreen}
         options={{
-          tabBarLabel: "שומר",
+          tabBarLabel: t("Guardian"),
           tabBarIcon: ({ color, focused }) => <ShieldTick size={focused ? 28 : 24} color={color} variant={focused ? "Bold" : "Outline"} />
         }}
       />
@@ -80,7 +83,7 @@ function MainTabs() {
         component={CreatePostNavigator}
         options={{
           headerShown: false,
-          tabBarLabel: "דווח",
+          tabBarLabel: t("Report"),
           tabBarIcon: ({ color, focused }) => (
             <View style={{
               backgroundColor: colors.primary,
@@ -105,7 +108,7 @@ function MainTabs() {
         name="Vault"
         component={PetVaultScreen}
         options={{
-          tabBarLabel: "דרכון",
+          tabBarLabel: t("Vault"),
           tabBarIcon: ({ color, focused }) => <SafeHome size={focused ? 28 : 24} color={color} variant={focused ? "Bold" : "Outline"} />
         }}
       />
@@ -113,7 +116,7 @@ function MainTabs() {
         name="Profile"
         component={ProfileScreen}
         options={{
-          tabBarLabel: "פרופיל",
+          tabBarLabel: t("Profile"),
           tabBarIcon: ({ color, focused }) => <User size={focused ? 28 : 24} color={color} variant={focused ? "Bold" : "Outline"} />
         }}
       />

@@ -5,6 +5,7 @@ import { useNavigation } from "@react-navigation/native";
 import { AppCard, AppButton, colors, useThemeColors } from "../components/ui";
 import { useSettings } from "../context/SettingsContext";
 import { useAuth } from "../context/AuthContext";
+import { useTranslation } from "../i18n/useTranslation";
 import {
   Notification,
   Timer,
@@ -22,18 +23,19 @@ import {
 export function SettingsScreen() {
   const settings = useSettings();
   const auth = useAuth();
+  const { t, isRTL } = useTranslation();
   const theme = useThemeColors();
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
 
   const handleLogout = () => {
     Alert.alert(
-      "Logout",
-      "Are you sure you want to sign out?",
+      t("SignOutConfirmTitle"),
+      t("SignOutConfirmMessage"),
       [
-        { text: "Cancel", style: "cancel" },
+        { text: t("Cancel"), style: "cancel" },
         {
-          text: "Logout",
+          text: t("Logout"),
           style: "destructive",
           onPress: () => auth.signOut()
         }
@@ -50,23 +52,23 @@ export function SettingsScreen() {
         >
           <ArrowLeft size={28} color={theme.text} variant="Outline" />
         </Pressable>
-        <Text style={[styles.headerTitle, { color: theme.text }]}>Settings</Text>
+        <Text style={[styles.headerTitle, { color: theme.text }]}>{t("Settings")}</Text>
         <View style={{ width: 40 }} />
       </View>
 
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
         {/* Account Section */}
-        <Text style={styles.sectionHeader}>ACCOUNT</Text>
+        <Text style={styles.sectionHeader}>{t("Account")}</Text>
         <AppCard>
           <SettingRow
-            label="Profile visibility"
+            label={t("ProfileVisibility")}
             value={true}
             onValueChange={() => { }}
             icon={<UserEdit size={22} color={theme.primary} variant="Bulk" />}
             disabled
           />
           <SettingRow
-            label="Two-factor authentication"
+            label={t("TwoFactorAuth")}
             value={false}
             onValueChange={() => { }}
             icon={<SecuritySafe size={22} color={theme.primary} variant="Bulk" />}
@@ -75,28 +77,28 @@ export function SettingsScreen() {
         </AppCard>
 
         {/* Notifications Section */}
-        <Text style={styles.sectionHeader}>NOTIFICATIONS & SOUND</Text>
+        <Text style={styles.sectionHeader}>{t("NotificationsSound")}</Text>
         <AppCard>
           <SettingRow
-            label="Push notifications"
+            label={t("PushNotifications")}
             value={settings.notificationsEnabled}
             onValueChange={settings.setNotificationsEnabled}
             icon={<Notification size={22} color={theme.primary} variant="Bulk" />}
           />
           <SettingRow
-            label="Audio feedback"
+            label={t("AudioFeedback")}
             value={settings.audioEnabled}
             onValueChange={settings.setAudioEnabled}
             icon={<VolumeHigh size={22} color={theme.primary} variant="Bulk" />}
           />
           <SettingRow
-            label="Haptic feedback"
+            label={t("HapticFeedback")}
             value={settings.hapticsEnabled}
             onValueChange={settings.setHapticsEnabled}
             icon={<Radar size={22} color={theme.primary} variant="Bulk" />}
           />
           <SettingRow
-            label="Quiet hours"
+            label={t("QuietHours")}
             value={settings.quietHoursEnabled}
             onValueChange={settings.setQuietHoursEnabled}
             icon={<Timer size={22} color={theme.primary} variant="Bulk" />}
@@ -104,16 +106,16 @@ export function SettingsScreen() {
         </AppCard>
 
         {/* Privacy Section */}
-        <Text style={styles.sectionHeader}>PRIVACY DEFAULTS</Text>
+        <Text style={styles.sectionHeader}>{t("PrivacyDefaults")}</Text>
         <AppCard>
           <SettingRow
-            label="Hide phone by default"
+            label={t("HidePhoneByDefault")}
             value={settings.hidePhoneByDefault}
             onValueChange={settings.setHidePhoneByDefault}
             icon={<EyeSlash size={22} color={theme.primary} variant="Bulk" />}
           />
           <SettingRow
-            label="Approximate map location"
+            label={t("ApproximateLocationByDefault")}
             value={settings.approximateLocationByDefault}
             onValueChange={settings.setApproximateLocationByDefault}
             icon={<Location size={22} color={theme.primary} variant="Bulk" />}
@@ -121,17 +123,18 @@ export function SettingsScreen() {
         </AppCard>
 
         {/* Regional Section */}
-        <Text style={styles.sectionHeader}>REGIONAL</Text>
+        <Text style={styles.sectionHeader}>{t("Regional")}</Text>
         <Pressable
           onPress={() => {
-            const next = settings.language === "Hebrew" ? "English" : "Hebrew";
+            const current = settings.language;
+            const next = current === "English" ? "Hebrew" : current === "Hebrew" ? "Arabic" : "English";
             settings.setLanguage(next);
           }}
         >
           <AppCard style={styles.languageCard}>
-            <View style={styles.languageHeader}>
+            <View style={[styles.languageHeader, isRTL && { flexDirection: "row-reverse" }]}>
               <Global size={22} color={theme.primary} variant="Bulk" />
-              <Text style={styles.languageLabel}>Language</Text>
+              <Text style={[styles.languageLabel, isRTL && { marginRight: 8, marginLeft: 0 }]}>{t("Language")}</Text>
             </View>
             <Text style={styles.languageValue}>{settings.language}</Text>
           </AppCard>
@@ -140,7 +143,7 @@ export function SettingsScreen() {
         {/* Logout Section */}
         <View style={{ marginTop: 32 }}>
           <AppButton
-            label="Sign Out"
+            label={t("Logout")}
             tone="danger"
             onPress={handleLogout}
             icon={<Logout size={20} color="#fff" />}

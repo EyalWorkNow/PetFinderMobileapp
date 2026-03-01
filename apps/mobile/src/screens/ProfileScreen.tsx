@@ -160,7 +160,7 @@ export function ProfileScreen() {
                 <View style={styles.missionDetails}>
                   <Text style={[styles.missionTitle, { color: theme.text }]} numberOfLines={1}>{item.title}</Text>
                   <Text style={[styles.missionMeta, { color: theme.muted }]}>{item.lastSeen?.label || "Unknown Location"}</Text>
-                  <Text style={[styles.missionDesc, { color: theme.text }]} numberOfLines={2}>{item.description}</Text>
+                  <Text style={[styles.missionDesc, { color: theme.text }]} numberOfLines={2}>{item.shortDesc}</Text>
                 </View>
               </View>
 

@@ -264,7 +264,7 @@ export function MatchesScreen() {
       <View style={styles.deckContainer}>
         {renderCards()}
       </View>
-      {showCelebration && <Confetti />}
+      <Confetti active={showCelebration} />
     </View>
   );
 }
@@ -331,7 +331,7 @@ const styles = StyleSheet.create({
   cardHeader: { flexDirection: "row", justifyContent: "flex-end" },
   badge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, overflow: 'hidden' },
   badgeText: { fontSize: 13, fontWeight: "900" },
-  cardFooter: { gap: 6, backgroundColor: "rgba(0,0,0,0.4)", padding: 16, borderRadius: 20, backdropFilter: "blur(10px)" },
+  cardFooter: { gap: 6, backgroundColor: "rgba(0,0,0,0.4)", padding: 16, borderRadius: 20 },
   title: { fontSize: 28, fontWeight: "900", color: "#fff" },
   meta: { fontSize: 16, fontWeight: "600", color: "rgba(255,255,255,0.8)" },
   aiReasoning: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 4 },

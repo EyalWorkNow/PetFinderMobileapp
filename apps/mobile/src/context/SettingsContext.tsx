@@ -9,14 +9,14 @@ interface SettingsState {
   approximateLocationByDefault: boolean;
   audioEnabled: boolean;
   hapticsEnabled: boolean;
-  language: "Hebrew" | "English";
+  language: "Hebrew" | "English" | "Arabic";
   setNotificationsEnabled: (value: boolean) => void;
   setQuietHoursEnabled: (value: boolean) => void;
   setHidePhoneByDefault: (value: boolean) => void;
   setApproximateLocationByDefault: (value: boolean) => void;
   setAudioEnabled: (value: boolean) => void;
   setHapticsEnabled: (value: boolean) => void;
-  setLanguage: (value: "Hebrew" | "English") => void;
+  setLanguage: (value: "Hebrew" | "English" | "Arabic") => void;
 }
 
 const SETTINGS_KEY = "petfind.settings.v1";
@@ -31,7 +31,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [approximateLocationByDefault, setApproximateLocationByDefault] = useState(true);
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [hapticsEnabled, setHapticsEnabled] = useState(true);
-  const [language, setLanguage] = useState<"Hebrew" | "English">("Hebrew");
+  const [language, setLanguage] = useState<"Hebrew" | "English" | "Arabic">("Hebrew");
 
   useEffect(() => {
     async function loadSettings() {
