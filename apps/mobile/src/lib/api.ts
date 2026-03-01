@@ -23,10 +23,14 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
     headers["x-user-id"] = options.userId;
   }
 
+  const hasBody = options.body !== undefined;
+  // If it's a POST but empty body, supply an empty array or object so Fastify doesn't crash on empty JSON.
+  const fetchBody = hasBody ? JSON.stringify(options.body) : (options.method === "POST" ? "{}" : undefined);
+
   const response = await fetch(url, {
     method: options.method ?? "GET",
     headers,
-    body: options.body ? JSON.stringify(options.body) : undefined
+    body: fetchBody
   }).catch(err => {
     console.error(`[API] Network error for ${url}:`, err);
     throw err;

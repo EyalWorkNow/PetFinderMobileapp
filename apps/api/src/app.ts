@@ -63,7 +63,7 @@ export async function buildApp(overrides: AppOverrides = {}) {
     }
 
     app.log.error(error);
-    reply.status(500).send({ error: "INTERNAL_SERVER_ERROR" });
+    reply.status(500).send({ error: "INTERNAL_SERVER_ERROR", message: message, trace: error instanceof Error ? error.stack : undefined });
   });
 
   async function requireUser(request: Parameters<AuthService["verifyRequest"]>[0], reply: any) {

@@ -43,7 +43,6 @@ export function SettingsScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.bg, paddingTop: insets.top }]}>
-      {/* Sticky Header */}
       <View style={styles.header}>
         <Pressable
           onPress={() => navigation.goBack()}
@@ -52,7 +51,7 @@ export function SettingsScreen() {
           <ArrowLeft size={28} color={theme.text} variant="Outline" />
         </Pressable>
         <Text style={[styles.headerTitle, { color: theme.text }]}>Settings</Text>
-        <View style={{ width: 40 }} /> {/* Spacer for balance */}
+        <View style={{ width: 40 }} />
       </View>
 
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
