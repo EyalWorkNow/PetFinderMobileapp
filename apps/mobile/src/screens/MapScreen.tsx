@@ -11,7 +11,6 @@ import {
   TouchableOpacity,
   TextInput,
   Keyboard,
-  Keyboard,
 } from "react-native";
 import { MagicStar, CloseCircle, ArrowUp2, CloseSquare, EyeSlash, ArrowRight2, Edit2, Activity, Timer, Radar, FilterSearch, Hierarchy, Security, LocationAdd } from "iconsax-react-native";
 // NOTE: Heatmap is not supported in Expo Go – we use a safe lazy import with fallback
