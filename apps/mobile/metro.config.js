@@ -1,4 +1,17 @@
 const path = require("node:path");
+
+// Metro 0.83 expects Array.prototype.toReversed, which is only available in newer Node runtimes.
+// Provide a small local fallback so the Expo bundler still works on older developer machines.
+if (!Array.prototype.toReversed) {
+  Object.defineProperty(Array.prototype, "toReversed", {
+    value: function toReversed() {
+      return [...this].reverse();
+    },
+    writable: true,
+    configurable: true
+  });
+}
+
 const { getDefaultConfig } = require("expo/metro-config");
 
 const projectRoot = __dirname;

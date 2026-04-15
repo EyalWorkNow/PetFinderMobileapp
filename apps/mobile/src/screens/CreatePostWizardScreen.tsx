@@ -2,9 +2,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 // NOTE: @react-native-community/slider requires native linking – not available in Expo Go
 // import Slider from "@react-native-community/slider"; <- REMOVED to prevent crash
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Alert, Image, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View, KeyboardAvoidingView, Platform, LayoutAnimation, Animated, Dimensions, Switch } from "react-native";
+import { Alert, Image, Modal, Pressable, ScrollView, StyleSheet, Text, View, KeyboardAvoidingView, Platform, LayoutAnimation, Animated, Dimensions, Switch } from "react-native";
 import * as Haptics from "expo-haptics";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import * as ImagePicker from "expo-image-picker";
@@ -14,12 +14,10 @@ import MapView, { Marker } from "react-native-maps";
 import { z } from "zod";
 import {
   Camera,
-  Gallery,
   Maximize4,
   Tag,
   Colorfilter,
   Gps,
-  CardTick,
   InfoCircle,
   Location as LocationIcon,
   Sms,
@@ -29,7 +27,6 @@ import {
   Scanning,
   Timer,
   Pet,
-  Map as MapIcon,
   SearchNormal1,
   Trash,
   DocumentText,
@@ -39,14 +36,11 @@ import {
   Hashtag,
   Clock,
   Status,
-  EyeSlash,
-  Eye,
-  ShieldTick
+  EyeSlash
 } from "iconsax-react-native";
-import { AppButton, AppCard, AppInput, colors, useThemeColors } from "../components/ui";
+import { AppButton, AppCard, AppInput, useThemeColors } from "../components/ui";
 import { useTranslation } from "../i18n/useTranslation";
 import { useAuth } from "../context/AuthContext";
-import { useSettings } from "../context/SettingsContext";
 import { useAcoustics } from "../context/AudioContext";
 import { apiRequest } from "../lib/api";
 import { AiService } from "../lib/AiService";
@@ -107,7 +101,6 @@ const MARK_CHIPS = [
 
 export function CreatePostWizardScreen({ navigation, route }: Props) {
   const auth = useAuth();
-  const settings = useSettings();
   const queryClient = useQueryClient();
   const { playSound } = useAcoustics();
   const { awardPoints } = useGuardian();
@@ -253,6 +246,8 @@ export function CreatePostWizardScreen({ navigation, route }: Props) {
 
       // Guardian Rewards
       awardPoints(100, "Publishing a quality post");
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 2500);
 
       // AI MATCHMAKING SIMULATION
       const allPosts = queryClient.getQueryData<any[]>(["posts"]) || [];
@@ -356,7 +351,8 @@ export function CreatePostWizardScreen({ navigation, route }: Props) {
       setMarkerLat(location.coords.latitude);
       setMarkerLng(location.coords.longitude);
       resolveAddress(location.coords.latitude, location.coords.longitude);
-    } catch (e) {
+    } catch (error) {
+      console.warn("High accuracy location lookup failed, retrying with balanced accuracy", error);
       // Fallback to balanced accuracy if high accuracy times out
       try {
         const fallbackLocation = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
@@ -364,6 +360,7 @@ export function CreatePostWizardScreen({ navigation, route }: Props) {
         setMarkerLng(fallbackLocation.coords.longitude);
         resolveAddress(fallbackLocation.coords.latitude, fallbackLocation.coords.longitude);
       } catch (fallbackError) {
+        console.warn("Balanced accuracy location lookup failed", fallbackError);
         Alert.alert("Location Error", "Could not fetch your location. Please check your GPS signal.");
       }
     }
@@ -426,11 +423,10 @@ export function CreatePostWizardScreen({ navigation, route }: Props) {
       );
     } catch (error) {
       setIsAnalyzingAI(false);
+      console.warn("AI analysis failed", error);
       Alert.alert("Analysis Failed", "Could not complete AI analysis.");
     }
   }
-
-  const progress = useMemo(() => `${step + 1}/5`, [step]);
 
   return (
     <LinearGradient colors={[theme.primarySoft, theme.bg, theme.bg]} style={styles.container}>
@@ -950,7 +946,7 @@ export function CreatePostWizardScreen({ navigation, route }: Props) {
                 style={{ marginTop: 24, height: 64, borderRadius: 20 }}
                 onPress={form.handleSubmit(
                   (values) => publishMutation.mutate(values),
-                  (errors) => {
+                  () => {
                     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => { });
                     Alert.alert(t("MissingDetails") || "Missing Details", t("PleaseFixErrors") || "Please fix the errors before publishing.");
                   }

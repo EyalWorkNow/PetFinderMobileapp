@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, Modal, Pressable, KeyboardAvoidingView, Platform, Keyboard } from "react-native";
 import { AppButton, AppInput, useThemeColors } from "../ui";
-import { usePetVault, PetProfile } from "../../context/PetVaultContext";
+import { usePetVault } from "../../context/PetVaultContext";
 import { CloseSquare } from "iconsax-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 

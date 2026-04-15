@@ -2,7 +2,6 @@ import React, { useState, useRef } from "react";
 import {
     Dimensions,
     FlatList,
-    Image,
     StyleSheet,
     Text,
     View,
@@ -17,7 +16,7 @@ interface OnboardingProps {
     onComplete: () => void;
 }
 
-const { width, height } = Dimensions.get("window");
+const { width } = Dimensions.get("window");
 
 const SLIDES = [
     {

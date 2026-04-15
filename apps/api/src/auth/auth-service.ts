@@ -51,7 +51,7 @@ export class AuthService {
         // Sync role from our DB
         const dbUser = await this.repository.getUserById(user.id);
         return { ...user, role: dbUser?.role ?? "USER" };
-      } catch (err) {
+      } catch {
         // Might be a local admin token
         try {
           const { payload } = await jwtVerify(token, this.secret);

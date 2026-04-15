@@ -18,7 +18,7 @@ import { z } from "zod";
 import { useAuth } from "../context/AuthContext";
 import { AppButton, AppCard, AppInput, useThemeColors } from "../components/ui";
 import { LinearGradient } from "expo-linear-gradient";
-import { Sms, Lock, Call, ShieldTick, ArrowRight } from "iconsax-react-native";
+import { Sms, Lock, Call, ShieldTick } from "iconsax-react-native";
 import { useTranslation } from "../i18n/useTranslation";
 import { AppLogo } from "../components/ui/AppLogo";
 
@@ -45,7 +45,6 @@ export function AuthScreen() {
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(1)).current;
-  const slideAnim = useRef(new Animated.Value(0)).current;
   const logoScale = useRef(new Animated.Value(1)).current;
   const segmentedAnim = useRef(new Animated.Value(0)).current;
 
@@ -114,6 +113,19 @@ export function AuthScreen() {
     } catch (error) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => { });
       Alert.alert("Authentication Error", error instanceof Error ? error.message : "Invalid code or phone number");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function onGooglePress() {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => { });
+    setLoading(true);
+    try {
+      await auth.signInWithGoogle();
+    } catch (error) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => { });
+      Alert.alert("Google Authentication Error", error instanceof Error ? error.message : "Google sign-in failed");
     } finally {
       setLoading(false);
     }
@@ -209,6 +221,24 @@ export function AuthScreen() {
                   onPress={emailForm.handleSubmit(onSubmitEmail)}
                   style={{ marginTop: 24 }}
                 />
+
+                {auth.usesSupabaseAuth ? (
+                  <>
+                    <View style={styles.oauthDivider}>
+                      <View style={[styles.oauthDividerLine, { backgroundColor: theme.border }]} />
+                      <Text style={[styles.oauthDividerText, { color: theme.muted }]}>or</Text>
+                      <View style={[styles.oauthDividerLine, { backgroundColor: theme.border }]} />
+                    </View>
+
+                    <AppButton
+                      label={isSignUp ? "Sign up with Google" : "Continue with Google"}
+                      loading={loading}
+                      tone="secondary"
+                      onPress={onGooglePress}
+                      icon={<Text style={[styles.googleIcon, { color: theme.primary }]}>G</Text>}
+                    />
+                  </>
+                ) : null}
 
                 <Pressable
                   style={styles.toggleMode}
@@ -365,9 +395,29 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#64748B"
   },
+  oauthDivider: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginTop: 18,
+    marginBottom: 14
+  },
+  oauthDividerLine: {
+    flex: 1,
+    height: 1
+  },
+  oauthDividerText: {
+    fontSize: 13,
+    fontWeight: "700",
+    textTransform: "uppercase"
+  },
   formCard: {
     padding: 24,
     borderRadius: 28,
+  },
+  googleIcon: {
+    fontSize: 18,
+    fontWeight: "900"
   },
   toggleMode: {
     marginTop: 20,

@@ -1,7 +1,7 @@
 import React from "react";
-import { View, Text, StyleSheet, Modal, Pressable, ScrollView, Platform } from "react-native";
-import { useThemeColors, AppButton } from "../ui";
-import { CloseSquare, MedalStar, ShieldTick } from "iconsax-react-native";
+import { View, Text, StyleSheet, Modal, Pressable, ScrollView } from "react-native";
+import { useThemeColors } from "../ui";
+import { CloseSquare, ShieldTick } from "iconsax-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "../../i18n/useTranslation";
 
@@ -11,14 +11,6 @@ interface LeaderboardModalProps {
     currentTier: string;
     currentPoints: number;
 }
-
-const MOCK_LEADERBOARD = [
-    { rank: 1, name: "Sarah J.", tier: "Neighborhood Legend", points: 15420, isMe: false },
-    { rank: 2, name: "Mike T.", tier: "Elite Protector", points: 12100, isMe: false },
-    { rank: 3, name: "Jessica R.", tier: "Elite Protector", points: 11050, isMe: false },
-    { rank: 4, name: "David L.", tier: "Guardian", points: 8400, isMe: false },
-    { rank: 5, name: "Emma W.", tier: "Guardian", points: 7900, isMe: false },
-];
 
 export function LeaderboardModal({ visible, onClose, currentTier, currentPoints }: LeaderboardModalProps) {
     const theme = useThemeColors();
@@ -39,8 +31,6 @@ export function LeaderboardModal({ visible, onClose, currentTier, currentPoints 
         ...player,
         rank: index + 1
     }));
-
-    const myRankItem = sortedLeaderboard.find(p => p.isMe)!;
 
     return (
         <Modal visible={visible} animationType="slide" transparent>

@@ -21,12 +21,12 @@ import { GhostSightingModal } from "../components/map/GhostSightingModal";
 // Ray-casting algorithm to figure out if a point is inside a polygon
 function isPointInPolygon(point: { lat: number; lng: number }, polygon: { latitude: number; longitude: number }[]) {
   if (polygon.length < 3) return false;
-  let x = point.lng, y = point.lat;
+  const x = point.lng, y = point.lat;
   let inside = false;
   for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-    let xi = polygon[i].longitude, yi = polygon[i].latitude;
-    let xj = polygon[j].longitude, yj = polygon[j].latitude;
-    let intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+    const xi = polygon[i].longitude, yi = polygon[i].latitude;
+    const xj = polygon[j].longitude, yj = polygon[j].latitude;
+    const intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
     if (intersect) inside = !inside;
   }
   return inside;
@@ -66,7 +66,7 @@ export function MapScreen() {
   const [region, setRegion] = useState<Region>(INITIAL_REGION);
   const [filterType, setFilterType] = useState<PostType | "ALL">("ALL");
   const [filterPetType, setFilterPetType] = useState<PetType | "ALL">("ALL");
-  const [sinceDays, setSinceDays] = useState<1 | 7 | 30>(7);
+  const [sinceDays] = useState<1 | 7 | 30>(7);
   const [radiusKm, setRadiusKm] = useState<number | "ALL">("ALL");
   const [showAlertZone, setShowAlertZone] = useState(false);
   const [showList, setShowList] = useState(false);
@@ -229,7 +229,7 @@ export function MapScreen() {
     else if (lowerQuery.includes("תוכי") || lowerQuery.includes("parrot")) setFilterPetType("PARROT");
 
     // Extracting search terms without the keywords
-    let cleanQuery = lowerQuery
+    const cleanQuery = lowerQuery
       .replace(/כלב|dog|חתול|cat|תוכי|parrot/g, "")
       .trim();
 
@@ -308,7 +308,7 @@ export function MapScreen() {
             strokeWidth={2}
           />
         )}
-        {displayPosts.map((post, index) => {
+        {displayPosts.map((post) => {
           const lat = post.lastSeen?.lat ?? region.latitude;
           const lng = post.lastSeen?.lng ?? region.longitude;
           const coordinate = { latitude: lat, longitude: lng };

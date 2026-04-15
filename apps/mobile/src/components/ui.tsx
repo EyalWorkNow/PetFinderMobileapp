@@ -7,13 +7,12 @@ import {
   Text,
   TextInput,
   View,
-  useColorScheme,
   type PressableProps,
   type TextInputProps,
   type ViewProps
 } from "react-native";
 import * as Haptics from "expo-haptics";
-import { useTheme, type PrimaryColorPreset, type ResolvedTheme } from "../context/ThemeContext";
+import { useTheme, type PrimaryColorPreset } from "../context/ThemeContext";
 
 export const colorPresets: Record<PrimaryColorPreset, { primary: string; primarySoft: string; primaryDark: string }> = {
   purple: { primary: "#9153F4", primarySoft: "#F3E8FF", primaryDark: "#7C3AED" },
@@ -77,7 +76,6 @@ export function useThemeColors() {
 
   // If custom, generate colors from the user's chosen hex
   if (primaryColor === "custom" && customHex) {
-    const softOpacity = resolvedTheme === "dark" ? 0.15 : 1;
     const softColor = resolvedTheme === "dark"
       ? `rgba(${parseInt(customHex.slice(1, 3), 16)}, ${parseInt(customHex.slice(3, 5), 16)}, ${parseInt(customHex.slice(5, 7), 16)}, 0.15)`
       : customHex + "1A";
@@ -124,7 +122,6 @@ export function AppCard({ onPress, ...props }: ViewProps & { onPress?: () => voi
 
   return (
     <Animated.View style={[{ transform: [{ scale: scaleAnim }] }]}>
-      {/* @ts-ignore - Container types are tricky here but works at runtime */}
       <Container
         {...props}
         onPressIn={handlePressIn}
@@ -252,7 +249,6 @@ export function SkeletonBox({ width, height, style }: { width?: string | number;
   }, [pulseAnim]);
 
   const colors = useThemeColors();
-  const styles = getStyles(colors);
   return (
     <Animated.View
       style={[{ width: width ?? "100%", height, backgroundColor: colors.border, borderRadius: 8, opacity: pulseAnim }, style]}

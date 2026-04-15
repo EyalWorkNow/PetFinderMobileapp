@@ -13,7 +13,7 @@ interface AudioContextType {
 const AudioContext = createContext<AudioContextType | null>(null);
 
 export function AudioProvider({ children }: { children: React.ReactNode }) {
-    const [sounds, setSounds] = useState<Record<SoundType, Audio.Sound | null>>({
+    const [sounds] = useState<Record<SoundType, Audio.Sound | null>>({
         success: null,
         error: null,
         pop: null,

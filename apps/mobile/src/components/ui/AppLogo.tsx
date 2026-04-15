@@ -13,9 +13,6 @@ export function AppLogo({ size = 216, color, secondaryColor }: AppLogoProps) {
     const primary = color || theme.primary;
     const secondary = secondaryColor || theme.primaryDark;
 
-    // Scale factor based on the original 216x216 viewbox
-    const scale = size / 216;
-
     return (
         <Svg width={size} height={size} viewBox="0 0 216 216" fill="none">
             <Defs>

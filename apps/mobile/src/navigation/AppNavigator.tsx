@@ -1,8 +1,8 @@
 import React from "react";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { Map, AddSquare, SearchNormal, User, Setting2, ShieldTick, SafeHome, Chart } from "iconsax-react-native";
+import { Map, AddSquare, User, ShieldTick, SafeHome, Chart } from "iconsax-react-native";
 import { useThemeColors } from "../components/ui";
 import { useTranslation } from "../i18n/useTranslation";
 import type { CreateStackParamList, MainTabParamList, RootStackParamList } from "./types";
@@ -88,7 +88,7 @@ function MainTabs() {
         options={{
           headerShown: false,
           tabBarLabel: t("Report"),
-          tabBarIcon: ({ color, focused }) => (
+          tabBarIcon: () => (
             <View style={{
               backgroundColor: theme.primary,
               width: 50,

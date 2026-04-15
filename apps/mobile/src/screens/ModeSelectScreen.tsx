@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { StyleSheet, Text, View, Pressable } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import * as Haptics from "expo-haptics";
-import { AppButton, AppCard, colors, useThemeColors } from "../components/ui";
+import { AppButton, AppCard, useThemeColors } from "../components/ui";
 import { useTranslation } from "../i18n/useTranslation";
-import { Pet, MoreCircle, TickCircle, Mirror, LampCharge } from "iconsax-react-native";
+import { MoreCircle, TickCircle } from "iconsax-react-native";
 import type { CreateStackParamList } from "../navigation/types";
 import type { PetType, PostType } from "../types/models";
 
@@ -88,7 +88,7 @@ type Props = NativeStackScreenProps<CreateStackParamList, "ModeSelect">;
 export function ModeSelectScreen({ navigation }: Props) {
   const [type, setType] = useState<PostType>("LOST");
   const [petType, setPetType] = useState<PetType>("DOG");
-  const { t, isRTL } = useTranslation();
+  const { t } = useTranslation();
   const theme = useThemeColors();
   const styles = makeStyles(theme);
 

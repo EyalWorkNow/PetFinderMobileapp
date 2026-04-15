@@ -1,12 +1,11 @@
 import React from "react";
-import { View, Text, StyleSheet, ScrollView, Pressable, Animated, Dimensions } from "react-native";
+import { View, Text, StyleSheet, ScrollView, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import {
     ShieldTick,
     LocationTick,
     Flash,
-    DirectRight,
     Map1,
     Radar,
     Danger,
@@ -15,7 +14,7 @@ import {
     Car
 } from "iconsax-react-native";
 import { useGuardian } from "../context/GuardianContext";
-import { colors, useThemeColors, AppButton } from "../components/ui";
+import { useThemeColors, AppButton } from "../components/ui";
 import { BarkAlertModal } from "../components/ui/BarkAlertModal";
 import { LeaderboardModal } from "../components/ui/LeaderboardModal";
 import { useAcoustics } from "../context/AudioContext";
@@ -34,8 +33,6 @@ export function GuardianScreen() {
     const [isLeaderboardVisible, setIsLeaderboardVisible] = useState(false);
     const [isBarkAlertVisible, setIsBarkAlertVisible] = useState(false);
     const { t } = useTranslation();
-
-    const { width } = Dimensions.get("window");
 
     return (
         <View style={[styles.container, { backgroundColor: theme.bg }]}>

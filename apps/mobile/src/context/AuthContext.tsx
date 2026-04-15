@@ -1,8 +1,12 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Linking from "expo-linking";
+import * as WebBrowser from "expo-web-browser";
 import { Session } from "@supabase/supabase-js";
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { appRuntimeConfig } from "../lib/config";
 import { supabase } from "../lib/supabase";
+
+WebBrowser.maybeCompleteAuthSession();
 
 interface AuthState {
   isReady: boolean;
@@ -13,6 +17,7 @@ interface AuthState {
   usesSupabaseAuth: boolean;
   signInWithEmail: (email: string, password: string) => Promise<void>;
   signUpWithEmail: (email: string, password: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
   signInWithPhoneOtp: (phone: string) => Promise<void>;
   verifyPhoneOtp: (phone: string, token: string) => Promise<void>;
   continueInDemoMode: () => Promise<void>;
@@ -22,6 +27,28 @@ interface AuthState {
 const DEMO_USER_STORAGE_KEY = "petfind.demoUserId";
 
 const AuthContext = createContext<AuthState | null>(null);
+
+function getAuthParamsFromUrl(url: string) {
+  const params = new URLSearchParams();
+  const queryIndex = url.indexOf("?");
+  const hashIndex = url.indexOf("#");
+
+  if (queryIndex >= 0) {
+    const query = url.slice(queryIndex + 1, hashIndex >= 0 ? hashIndex : undefined);
+    for (const [key, value] of new URLSearchParams(query)) {
+      params.set(key, value);
+    }
+  }
+
+  if (hashIndex >= 0) {
+    const hash = url.slice(hashIndex + 1);
+    for (const [key, value] of new URLSearchParams(hash)) {
+      params.set(key, value);
+    }
+  }
+
+  return params;
+}
 
 function sessionToState(session: Session | null) {
   if (!session?.access_token || !session.user?.id) {
@@ -110,7 +137,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return () => {
           subscription.subscription.unsubscribe();
         };
-      } catch (error) {
+      } catch {
         setUserId(null);
         setAccessToken(null);
         setRole(null);
@@ -173,6 +200,65 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error) {
         throw error;
       }
+    },
+    async signInWithGoogle() {
+      if (!supabase) {
+        throw new Error("Supabase auth is not configured in this build.");
+      }
+
+      await AsyncStorage.removeItem(ADMIN_STORAGE_KEY);
+
+      const redirectTo = Linking.createURL("auth/callback");
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo,
+          skipBrowserRedirect: true,
+          queryParams: {
+            access_type: "offline",
+            prompt: "consent"
+          }
+        }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (!data?.url) {
+        throw new Error("Google sign-in could not be started.");
+      }
+
+      const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+      if (result.type !== "success" || !result.url) {
+        throw new Error("Google sign-in was cancelled.");
+      }
+
+      const params = getAuthParamsFromUrl(result.url);
+      const accessToken = params.get("access_token");
+      const refreshToken = params.get("refresh_token");
+      const authCode = params.get("code");
+
+      if (accessToken && refreshToken) {
+        const { error: sessionError } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken
+        });
+        if (sessionError) {
+          throw sessionError;
+        }
+        return;
+      }
+
+      if (authCode) {
+        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(authCode);
+        if (exchangeError) {
+          throw exchangeError;
+        }
+        return;
+      }
+
+      throw new Error("Google sign-in completed without a session.");
     },
     async signInWithPhoneOtp(phone) {
       if (!supabase) {

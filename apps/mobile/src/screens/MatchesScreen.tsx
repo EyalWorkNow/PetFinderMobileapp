@@ -6,7 +6,7 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import * as Haptics from "expo-haptics";
-import { Radar, MagicStar, ShieldTick, Heart, CloseSquare, InfoCircle } from "iconsax-react-native";
+import { Radar, MagicStar, Heart, CloseSquare, InfoCircle } from "iconsax-react-native";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { useThemeColors, SkeletonBox } from "../components/ui";

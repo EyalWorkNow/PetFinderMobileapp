@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { StyleSheet, Switch, Text, View, ScrollView, Pressable, Alert, Modal, Dimensions } from "react-native";
+import { StyleSheet, Switch, Text, View, ScrollView, Pressable, Alert, Modal } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
-import { AppCard, AppButton, colors, useThemeColors } from "../components/ui";
+import { AppCard, AppButton, useThemeColors } from "../components/ui";
 import { useSettings } from "../context/SettingsContext";
 import { useAuth } from "../context/AuthContext";
 import { useTranslation } from "../i18n/useTranslation";

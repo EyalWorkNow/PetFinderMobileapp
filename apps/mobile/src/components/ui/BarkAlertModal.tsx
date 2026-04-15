@@ -13,7 +13,7 @@ interface BarkAlertModalProps {
     distance?: string;
 }
 
-const { width, height } = Dimensions.get("window");
+const { height } = Dimensions.get("window");
 
 export function BarkAlertModal({ visible, onClose, onDeploy, petName = "A Dog", distance = "1.2 km" }: BarkAlertModalProps) {
     const theme = useThemeColors();

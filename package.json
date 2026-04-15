@@ -3,6 +3,9 @@
   "private": true,
   "version": "0.1.0",
   "packageManager": "pnpm@10.6.1",
+  "engines": {
+    "node": ">=20.19.4"
+  },
   "scripts": {
     "dev": "concurrently \"pnpm --filter @petfind/api dev\" \"pnpm --filter @petfind/mobile dev\"",
     "dev:tunnel": "concurrently \"pnpm --filter @petfind/api dev\" \"pnpm --filter @petfind/mobile dev:tunnel\"",

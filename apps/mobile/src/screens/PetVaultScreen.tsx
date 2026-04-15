@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, ScrollView, Pressable, Image, Dimensions } from "react-native";
+import { View, Text, StyleSheet, ScrollView, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import {
@@ -8,21 +8,18 @@ import {
     NotificationStatus,
     Calendar,
     AddCircle,
-    Profile2User,
     Record,
     Verify,
     Edit2,
     CpuSetting,
     FingerScan
 } from "iconsax-react-native";
-import { colors, useThemeColors, AppButton, AppCard } from "../components/ui";
+import { useThemeColors, AppCard } from "../components/ui";
 import { usePetVault, DashboardTask } from "../context/PetVaultContext";
 import { TaskFormModal } from "../components/petvault/TaskFormModal";
 import { RecordFormModal } from "../components/petvault/RecordFormModal";
 import { EditProfileModal } from "../components/petvault/EditProfileModal";
 import { useTranslation } from "../i18n/useTranslation";
-
-const { width } = Dimensions.get("window");
 
 export function PetVaultScreen() {
     const insets = useSafeAreaInsets();

@@ -23,7 +23,7 @@ export const GuardianProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const [points, setPoints] = useState(150); // Starting bonus
     const [level, setLevel] = useState(1);
     const [tier, setTier] = useState(TIERS[0]);
-    const [streak, setStreak] = useState(3);
+    const [streak] = useState(3);
     const [isPatrolling, setIsPatrolling] = useState(false);
 
     useEffect(() => {

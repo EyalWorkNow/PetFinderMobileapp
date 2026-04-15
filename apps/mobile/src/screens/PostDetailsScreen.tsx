@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import { Alert, Image, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View, Dimensions, Share } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { LinearGradient } from "expo-linear-gradient";
 import MapView, { Circle } from "react-native-maps";
 import * as Location from "expo-location";
 import * as Haptics from "expo-haptics";
@@ -47,7 +46,7 @@ export function PostDetailsScreen({ route, navigation }: Props) {
   const insets = useSafeAreaInsets();
   const { t, isRTL } = useTranslation();
 
-  const { width: windowWidth, height: windowHeight } = Dimensions.get("window");
+  const { height: windowHeight } = Dimensions.get("window");
 
   React.useLayoutEffect(() => {
     navigation.setOptions({

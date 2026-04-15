@@ -2,6 +2,7 @@
   "expo": {
     "name": "PetFinder",
     "slug": "petfinder",
+    "scheme": "petfinder",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
@@ -16,7 +17,14 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "petfinder",
-      "googleServicesFile": "./GoogleService-Info.plist"
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSCameraUsageDescription": "PetFind uses the camera so you can capture photos for lost and found pet reports.",
+        "NSPhotoLibraryUsageDescription": "PetFind uses your photo library so you can attach pet photos to reports and matches.",
+        "NSLocationWhenInUseUsageDescription": "PetFind uses your location to show nearby reports and help you mark where a pet was last seen.",
+        "NSUserNotificationsUsageDescription": "PetFind sends match alerts and urgent nearby pet notifications."
+      }
     },
     "android": {
       "package": "com.petfind.mobile"
@@ -25,7 +33,21 @@
       "@react-native-firebase/app",
       "expo-notifications",
       "expo-asset",
-      "expo-font"
+      "expo-font",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "PetFind uses your photo library so you can attach pet photos to reports and matches.",
+          "cameraPermission": "PetFind uses the camera so you can capture photos for lost and found pet reports."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "PetFind uses your location to show nearby reports and help you mark where a pet was last seen."
+        }
+      ],
+      "expo-web-browser"
     ],
     "extra": {
       "eas": {
