@@ -3,6 +3,8 @@ import type { PostType } from "@petfind/shared";
 import type { CreatePostInput, QueryPostsFilters } from "../services/post-service";
 import type {
   ContactMessageRecord,
+  DonationRecord,
+  DonationStatus,
   EmbeddingRecord,
   MatchBundle,
   MatchRecord,
@@ -13,6 +15,7 @@ import type {
   ReportRecord,
   SightingRecord,
   UserRecord,
+  UserRole,
   PhotoRecord
 } from "./models";
 import type { Repository } from "./repository";
@@ -61,11 +64,21 @@ export class InMemoryRepository implements Repository {
     };
   }
 
-  async upsertUser(input: { id: string; email?: string | null; phone?: string | null }): Promise<UserRecord> {
+  async upsertUser(input: {
+    id: string;
+    email?: string | null;
+    phone?: string | null;
+    role?: UserRole;
+    passwordHash?: string | null;
+    totalDonated?: number;
+  }): Promise<UserRecord> {
     const existing = this.state.users.find((user) => user.id === input.id);
     if (existing) {
-      existing.email = input.email ?? existing.email;
-      existing.phone = input.phone ?? existing.phone;
+      existing.email = input.email !== undefined ? input.email : existing.email;
+      existing.phone = input.phone !== undefined ? input.phone : existing.phone;
+      existing.role = input.role !== undefined ? input.role : existing.role;
+      existing.passwordHash = input.passwordHash !== undefined ? input.passwordHash : existing.passwordHash;
+      existing.totalDonated = input.totalDonated !== undefined ? input.totalDonated : existing.totalDonated;
       return existing;
     }
 
@@ -73,10 +86,48 @@ export class InMemoryRepository implements Repository {
       id: input.id,
       email: input.email ?? null,
       phone: input.phone ?? null,
+      role: input.role ?? "USER",
+      passwordHash: input.passwordHash ?? null,
+      totalDonated: input.totalDonated ?? 0,
       createdAt: new Date()
     };
     this.state.users.push(created);
     return created;
+  }
+
+  async getUserByEmail(email: string): Promise<UserRecord | null> {
+    return this.state.users.find((u) => u.email === email) ?? null;
+  }
+
+  async getUserById(id: string): Promise<UserRecord | null> {
+    return this.state.users.find((u) => u.id === id) ?? null;
+  }
+
+  async listAllUsers(): Promise<UserRecord[]> {
+    return [...this.state.users];
+  }
+
+  async createDonation(input: {
+    userId: string;
+    amount: number;
+    currency: string;
+    status: DonationStatus;
+  }): Promise<DonationRecord> {
+    const donation: DonationRecord = {
+      id: randomUUID(),
+      userId: input.userId,
+      amount: input.amount,
+      currency: input.currency,
+      status: input.status,
+      createdAt: new Date()
+    };
+    if (input.status === "COMPLETED") {
+      const user = this.state.users.find(u => u.id === input.userId);
+      if (user) {
+        user.totalDonated += input.amount;
+      }
+    }
+    return donation;
   }
 
   async createPost(input: CreatePostInput): Promise<PostBundle> {

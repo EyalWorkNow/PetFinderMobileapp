@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useAuth } from "./AuthContext";
 
 export type TaskType = "VET" | "CARE" | "OTHER";
 
@@ -59,9 +60,9 @@ const defaultState: PetVaultState = {
         { id: "4", label: "Triggers", value: "TerrifiedOfLoudNoises", iconType: "danger" }
     ],
     tasks: [
-        { id: "1", title: "Rabies Booster", date: "Mar 12, 2026", time: "10:30 AM", type: "VET" },
-        { id: "2", title: "Flea & Tick Treatment", date: "Apr 01, 2026", time: "08:00 AM", type: "CARE" },
-        { id: "3", title: "Annual Checkup", date: "May 20, 2026", time: "16:00 PM", type: "VET" }
+        { id: "1", title: "RabiesBooster", date: "Mar 12, 2026", time: "10:30 AM", type: "VET" },
+        { id: "2", title: "FleaTickTreatment", date: "Apr 01, 2026", time: "08:00 AM", type: "CARE" },
+        { id: "3", title: "AnnualCheckup", date: "May 20, 2026", time: "16:00 PM", type: "VET" }
     ],
     healthCondition: "Good",
     nextVetDate: "12 Mar",
@@ -70,21 +71,31 @@ const defaultState: PetVaultState = {
 const PetVaultContext = createContext<PetVaultContextProps | undefined>(undefined);
 
 export const PetVaultProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const { userId } = useAuth();
     const [state, setState] = useState<PetVaultState>(defaultState);
 
+    const getStorageKey = (uid: string) => `petfind.petvault.${uid}`;
+
     useEffect(() => {
+        if (!userId) {
+            setState(defaultState);
+            return;
+        }
+
         const loadData = async () => {
             try {
-                const storedState = await AsyncStorage.getItem("petfind.petvault");
+                const storedState = await AsyncStorage.getItem(getStorageKey(userId));
                 if (storedState) {
                     setState(JSON.parse(storedState));
+                } else {
+                    setState(defaultState);
                 }
             } catch (error) {
                 console.error("Failed to load PetVault state", error);
             }
         };
         loadData();
-    }, []);
+    }, [userId]);
 
     const recalculateHealthSummary = (currentTasks: DashboardTask[]) => {
         const vetTasks = currentTasks.filter(t => t.type === "VET");
@@ -99,8 +110,9 @@ export const PetVaultProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     const saveState = async (newState: PetVaultState) => {
         setState(newState);
+        if (!userId) return;
         try {
-            await AsyncStorage.setItem("petfind.petvault", JSON.stringify(newState));
+            await AsyncStorage.setItem(getStorageKey(userId), JSON.stringify(newState));
         } catch (error) {
             console.error("Failed to save PetVault state", error);
         }
@@ -116,7 +128,7 @@ export const PetVaultProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     };
 
     const removeRecord = (id: string) => {
-        saveState({ ...state, records: state.records.filter(r => r.id !== id) });
+        saveState({ ...state, records: state.records.filter((r: PetRecord) => r.id !== id) });
     };
 
     const addTask = (task: Omit<DashboardTask, "id">) => {
@@ -127,13 +139,13 @@ export const PetVaultProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     };
 
     const updateTask = (id: string, taskUpdate: Partial<DashboardTask>) => {
-        const updatedTasks = state.tasks.map(t => t.id === id ? { ...t, ...taskUpdate } : t);
+        const updatedTasks = state.tasks.map((t: DashboardTask) => t.id === id ? { ...t, ...taskUpdate } : t);
         const healthVals = recalculateHealthSummary(updatedTasks);
         saveState({ ...state, tasks: updatedTasks, healthCondition: healthVals.condition, nextVetDate: healthVals.nextVetDate });
     };
 
     const removeTask = (id: string) => {
-        const updatedTasks = state.tasks.filter(t => t.id !== id);
+        const updatedTasks = state.tasks.filter((t: DashboardTask) => t.id !== id);
         const healthVals = recalculateHealthSummary(updatedTasks);
         saveState({ ...state, tasks: updatedTasks, healthCondition: healthVals.condition, nextVetDate: healthVals.nextVetDate });
     };

@@ -9,7 +9,7 @@ import * as Haptics from "expo-haptics";
 import { Radar, MagicStar, ShieldTick, Heart, CloseSquare, InfoCircle } from "iconsax-react-native";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
-import { colors, useThemeColors, SkeletonBox } from "../components/ui";
+import { useThemeColors, SkeletonBox } from "../components/ui";
 import { apiRequest } from "../lib/api";
 import { Confetti } from "../components/Confetti";
 import type { MatchItem } from "../types/models";
@@ -27,6 +27,7 @@ export function MatchesScreen() {
   const navigation = useNavigation<Navigation>();
   const queryClient = useQueryClient();
   const theme = useThemeColors();
+  const styles = React.useMemo(() => getStyles(theme), [theme]);
   const { showToast } = useToast();
   const { t } = useTranslation();
 
@@ -294,6 +295,8 @@ function StoryLoader({ theme }: { theme: any }) {
     return () => clearInterval(interval);
   }, []);
 
+  const styles = React.useMemo(() => getStyles(theme), [theme]);
+
   return (
     <View style={styles.storyOverlay}>
       <Animated.Text style={[styles.storyText, { color: theme.primary, opacity: fadeAnim }]}>
@@ -303,7 +306,7 @@ function StoryLoader({ theme }: { theme: any }) {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: { flex: 1 },
   deckContainer: { flex: 1, alignItems: "center", justifyContent: "center", paddingBottom: 60 },
   emptyWrap: { alignItems: "center", justifyContent: "center", padding: 40 },
@@ -326,14 +329,14 @@ const styles = StyleSheet.create({
   image: { ...StyleSheet.absoluteFillObject, resizeMode: "cover" },
   gradientOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.3)",
+    backgroundColor: "rgba(0,0,0,0.2)",
     justifyContent: "space-between",
     padding: 24
   },
   cardHeader: { flexDirection: "row", justifyContent: "flex-end" },
   badge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, overflow: 'hidden' },
   badgeText: { fontSize: 13, fontWeight: "900" },
-  cardFooter: { gap: 6, backgroundColor: "rgba(0,0,0,0.4)", padding: 16, borderRadius: 20 },
+  cardFooter: { gap: 6, backgroundColor: "rgba(0,0,0,0.3)", padding: 16, borderRadius: 20 },
   title: { fontSize: 28, fontWeight: "900", color: "#fff" },
   meta: { fontSize: 16, fontWeight: "600", color: "rgba(255,255,255,0.8)" },
   aiReasoning: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 4 },
@@ -344,7 +347,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 24,
     paddingBottom: 32,
-    backgroundColor: "rgba(0,0,0,0.8)" // Very dark for contrast
+    backgroundColor: colors.surface
   },
   actionBtn: {
     width: 56,
@@ -353,7 +356,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(255,255,255,0.1)"
+    backgroundColor: colors.bg
   },
   likeIndicator: {
     position: "absolute",

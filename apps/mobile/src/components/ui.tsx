@@ -15,27 +15,37 @@ import {
 import * as Haptics from "expo-haptics";
 import { useTheme, type PrimaryColorPreset, type ResolvedTheme } from "../context/ThemeContext";
 
-export const colorPresets: Record<PrimaryColorPreset, { primary: string; primarySoft: string }> = {
-  purple: { primary: "#6366F1", primarySoft: "#E0E7FF" }, // Indigo
-  blue: { primary: "#0EA5E9", primarySoft: "#E0F2FE" },   // Sky / Cyan
-  green: { primary: "#10B981", primarySoft: "#D1FAE5" },  // Emerald
-  orange: { primary: "#F59E0B", primarySoft: "#FEF3C7" }, // Amber
-  rose: { primary: "#F43F5E", primarySoft: "#FFE4E6" }    // Rose/Neon Pink
+export const colorPresets: Record<PrimaryColorPreset, { primary: string; primarySoft: string; primaryDark: string }> = {
+  purple: { primary: "#9153F4", primarySoft: "#F3E8FF", primaryDark: "#7C3AED" },
+  blue: { primary: "#2F89FC", primarySoft: "#E0F2FE", primaryDark: "#1D4ED8" },
+  green: { primary: "#393E46", primarySoft: "#E5E7EB", primaryDark: "#222831" },
+  custom: { primary: "#F78F1E", primarySoft: "#FFF7ED", primaryDark: "#C2410C" },
+  rose: { primary: "#F02A71", primarySoft: "#FFF1F2", primaryDark: "#BE123C" },
+  sky: { primary: "#0EA5E9", primarySoft: "#E0F2FE", primaryDark: "#0369A1" },
+  matcha: { primary: "#84CC16", primarySoft: "#F7FEE7", primaryDark: "#4D7C0F" },
+  honey: { primary: "#F59E0B", primarySoft: "#FFFBEB", primaryDark: "#B45309" },
+  grape: { primary: "#8B5CF6", primarySoft: "#F5F3FF", primaryDark: "#6D28D9" },
+  coral: { primary: "#FF7F50", primarySoft: "#FFF1EB", primaryDark: "#E76F51" }
 };
-export const darkColorPresets: Record<PrimaryColorPreset, { primary: string; primarySoft: string }> = {
-  purple: { primary: "#818CF8", primarySoft: "rgba(129, 140, 248, 0.15)" },
-  blue: { primary: "#38BDF8", primarySoft: "rgba(56, 189, 248, 0.15)" },
-  green: { primary: "#34D399", primarySoft: "rgba(52, 211, 153, 0.15)" },
-  orange: { primary: "#FBBF24", primarySoft: "rgba(251, 191, 36, 0.15)" },
-  rose: { primary: "#FB7185", primarySoft: "rgba(251, 113, 133, 0.15)" }
+export const darkColorPresets: Record<PrimaryColorPreset, { primary: string; primarySoft: string; primaryDark: string }> = {
+  purple: { primary: "#A78BFA", primarySoft: "rgba(167, 139, 250, 0.15)", primaryDark: "#7C3AED" },
+  blue: { primary: "#60A5FA", primarySoft: "rgba(96, 165, 250, 0.15)", primaryDark: "#1D4ED8" },
+  green: { primary: "#4B5563", primarySoft: "rgba(75, 85, 99, 0.15)", primaryDark: "#1F2937" },
+  custom: { primary: "#FB923C", primarySoft: "rgba(251, 146, 60, 0.15)", primaryDark: "#C2410C" },
+  rose: { primary: "#FB7185", primarySoft: "rgba(251, 113, 133, 0.15)", primaryDark: "#BE123C" },
+  sky: { primary: "#38BDF8", primarySoft: "rgba(56, 189, 248, 0.15)", primaryDark: "#0369A1" },
+  matcha: { primary: "#A3E635", primarySoft: "rgba(163, 230, 53, 0.15)", primaryDark: "#4D7C0F" },
+  honey: { primary: "#FBBF24", primarySoft: "rgba(251, 191, 36, 0.15)", primaryDark: "#B45309" },
+  grape: { primary: "#A78BFA", primarySoft: "rgba(167, 139, 250, 0.15)", primaryDark: "#6D28D9" },
+  coral: { primary: "#FB923C", primarySoft: "rgba(251, 146, 60, 0.15)", primaryDark: "#E76F51" }
 };
 
 export const lightColors = {
   bg: "#F8FAFC",
   surface: "#FFFFFF",
-  primary: "#4F46E5",
-  primarySoft: "#E0E7FF",
-  accent: "#FB7185",
+  primary: "#9153F4",
+  primarySoft: "#F3E8FF",
+  accent: "#F02A71",
   text: "#0F172A",
   muted: "#64748B",
   danger: "#E11D48",
@@ -48,9 +58,9 @@ export const lightColors = {
 export const darkColors = {
   bg: "#0A0A0A", // Deeper OLED black
   surface: "#171717",
-  primary: "#6366F1",
-  primarySoft: "rgba(99, 102, 241, 0.15)",
-  accent: "#FDA4AF",
+  primary: "#A78BFA",
+  primarySoft: "rgba(167, 139, 250, 0.15)",
+  accent: "#FB7185",
   text: "#F8FAFC",
   muted: "#A3A3A3",
   danger: "#F43F5E",
@@ -61,11 +71,24 @@ export const darkColors = {
 };
 
 export function useThemeColors() {
-  const { resolvedTheme, primaryColor } = useTheme();
+  const { resolvedTheme, primaryColor, customHex } = useTheme();
   const base = resolvedTheme === "dark" ? darkColors : lightColors;
-  const preset = resolvedTheme === "dark" ? darkColorPresets[primaryColor] : colorPresets[primaryColor];
+  let preset = resolvedTheme === "dark" ? darkColorPresets[primaryColor] : colorPresets[primaryColor];
 
-  // Return a fresh object containing base colors mixed with the user's selected primary accent
+  // If custom, generate colors from the user's chosen hex
+  if (primaryColor === "custom" && customHex) {
+    const softOpacity = resolvedTheme === "dark" ? 0.15 : 1;
+    const softColor = resolvedTheme === "dark"
+      ? `rgba(${parseInt(customHex.slice(1, 3), 16)}, ${parseInt(customHex.slice(3, 5), 16)}, ${parseInt(customHex.slice(5, 7), 16)}, 0.15)`
+      : customHex + "1A";
+    // Darken the hex by reducing each channel by ~30%
+    const r = Math.max(0, Math.round(parseInt(customHex.slice(1, 3), 16) * 0.7));
+    const g = Math.max(0, Math.round(parseInt(customHex.slice(3, 5), 16) * 0.7));
+    const b = Math.max(0, Math.round(parseInt(customHex.slice(5, 7), 16) * 0.7));
+    const darkHex = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+    preset = { primary: customHex, primarySoft: softColor, primaryDark: darkHex };
+  }
+
   return { ...base, ...preset };
 }
 

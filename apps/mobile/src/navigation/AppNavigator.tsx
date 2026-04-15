@@ -2,7 +2,7 @@ import React from "react";
 import { Text, View } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { Map, AddSquare, SearchNormal, User, Setting2, ShieldTick, SafeHome } from "iconsax-react-native";
+import { Map, AddSquare, SearchNormal, User, Setting2, ShieldTick, SafeHome, Chart } from "iconsax-react-native";
 import { useThemeColors } from "../components/ui";
 import { useTranslation } from "../i18n/useTranslation";
 import type { CreateStackParamList, MainTabParamList, RootStackParamList } from "./types";
@@ -15,6 +15,8 @@ import { ProfileScreen } from "../screens/ProfileScreen";
 import { SettingsScreen } from "../screens/SettingsScreen";
 import { GuardianScreen } from "../screens/GuardianScreen";
 import { PetVaultScreen } from "../screens/PetVaultScreen";
+import { AdminDashboardScreen } from "../screens/AdminDashboardScreen";
+import { useAuth } from "../context/AuthContext";
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -32,6 +34,7 @@ function CreatePostNavigator() {
 function MainTabs() {
   const { t } = useTranslation();
   const theme = useThemeColors();
+  const { role } = useAuth();
 
   return (
     <Tab.Navigator
@@ -93,7 +96,7 @@ function MainTabs() {
               borderRadius: 25,
               alignItems: "center",
               justifyContent: "center",
-              shadowColor: theme.accent,
+              shadowColor: theme.primary,
               shadowOffset: { width: 0, height: 4 },
               shadowOpacity: 0.3,
               shadowRadius: 10,
@@ -121,6 +124,16 @@ function MainTabs() {
           tabBarIcon: ({ color, focused }) => <User size={focused ? 28 : 24} color={color} variant={focused ? "Bold" : "Outline"} />
         }}
       />
+      {role === "ADMIN" && (
+        <Tab.Screen
+          name="AdminDashboard"
+          component={AdminDashboardScreen}
+          options={{
+            tabBarLabel: "Admin",
+            tabBarIcon: ({ color, focused }) => <Chart size={focused ? 28 : 24} color={color} variant={focused ? "Bold" : "Outline"} />
+          }}
+        />
+      )}
     </Tab.Navigator>
   );
 }

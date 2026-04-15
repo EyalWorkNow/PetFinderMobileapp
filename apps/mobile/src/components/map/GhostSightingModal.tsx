@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { View, Text, StyleSheet, Modal, Animated, Pressable } from "react-native";
 import { CopySuccess, LocationAdd, CloseSquare } from "iconsax-react-native";
-import { colors, AppButton } from "../ui";
+import { useThemeColors, AppButton } from "../ui";
 import * as Haptics from "expo-haptics";
 
 interface GhostSightingModalProps {
@@ -12,6 +12,7 @@ interface GhostSightingModalProps {
 }
 
 export function GhostSightingModal({ visible, coordinate, onClose, onConfirm }: GhostSightingModalProps) {
+    const theme = useThemeColors();
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const [isRecording, setIsRecording] = useState(false);
     const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -54,12 +55,14 @@ export function GhostSightingModal({ visible, coordinate, onClose, onConfirm }: 
         onConfirm();
     };
 
+    const styles = getStyles(theme);
+
     return (
         <Modal transparent visible={visible} animationType="none">
             <Animated.View style={[styles.overlay, { opacity: fadeAnim }]}>
                 <View style={styles.modalContent}>
                     <Pressable style={styles.closeBtn} onPress={onClose}>
-                        <CloseSquare size={28} color={colors.text} variant="Bulk" />
+                        <CloseSquare size={28} color={theme.text} variant="Bulk" />
                     </Pressable>
 
                     <View style={styles.header}>
@@ -73,17 +76,17 @@ export function GhostSightingModal({ visible, coordinate, onClose, onConfirm }: 
                     </Text>
 
                     <View style={styles.recordBox}>
-                        <Animated.View style={[styles.micPulse, { transform: [{ scale: pulseAnim }], opacity: isRecording ? 0.3 : 0 }]} />
+                        <Animated.View style={[styles.micPulse, { transform: [{ scale: pulseAnim }], opacity: isRecording ? 0.3 : 0, backgroundColor: theme.danger }]} />
                         <Pressable
-                            style={[styles.micBtn, isRecording && { backgroundColor: colors.danger }]}
+                            style={[styles.micBtn, { backgroundColor: theme.primary }, isRecording && { backgroundColor: theme.danger }]}
                             onPress={() => {
                                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
                                 setIsRecording(!isRecording);
                             }}
                         >
-                            <CopySuccess size={32} color={colors.surface} variant="Bold" />
+                            <CopySuccess size={32} color={theme.surface} variant="Bold" />
                         </Pressable>
-                        <Text style={styles.recordText}>
+                        <Text style={[styles.recordText, { color: theme.text }]}>
                             {isRecording ? "Listening... Tap to stop" : "Tap to record Intel (optional)"}
                         </Text>
                     </View>
@@ -100,7 +103,7 @@ export function GhostSightingModal({ visible, coordinate, onClose, onConfirm }: 
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
     overlay: {
         ...StyleSheet.absoluteFillObject,
         backgroundColor: "rgba(0,0,0,0.6)",
@@ -156,14 +159,12 @@ const styles = StyleSheet.create({
         position: "absolute",
         width: 100,
         height: 100,
-        borderRadius: 50,
-        backgroundColor: colors.danger
+        borderRadius: 50
     },
     micBtn: {
         width: 72,
         height: 72,
         borderRadius: 36,
-        backgroundColor: colors.primary,
         alignItems: "center",
         justifyContent: "center",
         marginBottom: 16,
@@ -175,7 +176,6 @@ const styles = StyleSheet.create({
     },
     recordText: {
         fontSize: 14,
-        fontWeight: "600",
-        color: colors.text
+        fontWeight: "600"
     }
 });

@@ -1,6 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { Alert } from "react-native";
-import { NavigationContainer } from "@react-navigation/native";
+import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
+
+const customNavTheme = {
+  ...DefaultTheme,
+  fonts: {
+    regular: { fontFamily: '', fontWeight: 'normal' },
+    medium: { fontFamily: '', fontWeight: '500' },
+    bold: { fontFamily: '', fontWeight: 'bold' },
+    heavy: { fontFamily: '', fontWeight: '900' },
+  },
+};
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AuthProvider, useAuth } from "./src/context/AuthContext";
@@ -78,7 +88,7 @@ function AppContent() {
   }, [auth.accessToken, auth.userId, settings.notificationsEnabled]);
 
   if (!auth.isReady || !settings.isReady || hasSeenOnboarding === null) {
-    return <ScreenLoading label="Starting PetFind..." />;
+    return <ScreenLoading label="Starting PetFinder..." />;
   }
 
   if (showSplash) {
@@ -90,7 +100,7 @@ function AppContent() {
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={customNavTheme as any}>
       {auth.isAuthenticated ? <AppNavigator /> : <AuthScreen />}
     </NavigationContainer>
   );

@@ -74,6 +74,7 @@ export function MapScreen() {
   const [isDrawingMode, setIsDrawingMode] = useState(false);
   const [drawnPolygon, setDrawnPolygon] = useState<{ latitude: number, longitude: number }[]>([]);
   const [omniQuery, setOmniQuery] = useState("");
+  const [appliedQuery, setAppliedQuery] = useState("");
   const [isAnalyzingOmni, setIsAnalyzingOmni] = useState(false);
   const [hiddenPosts, setHiddenPosts] = useState<string[]>([]);
   const [timeLapseDays, setTimeLapseDays] = useState<number | null>(null);
@@ -97,7 +98,7 @@ export function MapScreen() {
       if (status !== "granted") {
         return;
       }
-      const current = await Location.getCurrentPositionAsync({});
+      const current = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.BestForNavigation });
       setRegion((prev) => ({
         ...prev,
         latitude: current.coords.latitude,
@@ -173,10 +174,26 @@ export function MapScreen() {
     }
 
     if (drawnPolygon.length > 2 && !isDrawingMode) {
-      return fetched.filter(p => isPointInPolygon({ lat: p.lastSeen.lat, lng: p.lastSeen.lng }, drawnPolygon));
+      fetched = fetched.filter(p => isPointInPolygon({ lat: p.lastSeen.lat, lng: p.lastSeen.lng }, drawnPolygon));
     }
+
+    if (appliedQuery.trim().length > 0) {
+      const queryWords = appliedQuery.toLowerCase().split(/\s+/).filter(w => w.length > 0);
+      fetched = fetched.filter(p => {
+        const searchableText = [
+          p.title,
+          p.shortDesc,
+          p.breed,
+          p.colors?.join(" "),
+          p.marksText
+        ].filter(Boolean).join(" ").toLowerCase();
+
+        return queryWords.every(word => searchableText.includes(word));
+      });
+    }
+
     return fetched;
-  }, [postsQuery.data, drawnPolygon, isDrawingMode, hiddenPosts, timeLapseDays]);
+  }, [postsQuery.data, drawnPolygon, isDrawingMode, hiddenPosts, timeLapseDays, appliedQuery]);
 
   const heatmapPoints = useMemo(() => {
     return displayPosts.flatMap(post => {
@@ -185,8 +202,8 @@ export function MapScreen() {
       const numSearchers = 8;
       for (let i = 0; i < numSearchers; i++) {
         pts.push({
-          latitude: post.lastSeen.lat + (Math.random() - 0.5) * 0.05,
-          longitude: post.lastSeen.lng + (Math.random() - 0.5) * 0.05,
+          latitude: post.lastSeen.lat + (Math.random() - 0.5) * 0.001,
+          longitude: post.lastSeen.lng + (Math.random() - 0.5) * 0.001,
           weight: 0.2 + Math.random() * 0.5
         });
       }
@@ -210,10 +227,13 @@ export function MapScreen() {
     if (lowerQuery.includes("כלב") || lowerQuery.includes("dog")) setFilterPetType("DOG");
     else if (lowerQuery.includes("חתול") || lowerQuery.includes("cat")) setFilterPetType("CAT");
     else if (lowerQuery.includes("תוכי") || lowerQuery.includes("parrot")) setFilterPetType("PARROT");
-    else setFilterPetType("ALL");
 
-    if (lowerQuery.includes("פודל") || lowerQuery.includes("poodle")) setFilterType("LOST"); // Just random logic to show it works
+    // Extracting search terms without the keywords
+    let cleanQuery = lowerQuery
+      .replace(/כלב|dog|חתול|cat|תוכי|parrot/g, "")
+      .trim();
 
+    setAppliedQuery(cleanQuery);
     setRadiusKm("ALL"); // Reset radius
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => { });
     setIsAnalyzingOmni(false);
@@ -289,13 +309,9 @@ export function MapScreen() {
           />
         )}
         {displayPosts.map((post, index) => {
-          const jitter = index * 0.0001;
           const lat = post.lastSeen?.lat ?? region.latitude;
           const lng = post.lastSeen?.lng ?? region.longitude;
-          const coordinate = {
-            latitude: lat + (index % 2 === 0 ? jitter : -jitter),
-            longitude: lng + (index % 3 === 0 ? jitter : -jitter),
-          };
+          const coordinate = { latitude: lat, longitude: lng };
 
           const postDate = new Date(post.createdAt).getTime();
           const now = Date.now();
@@ -333,7 +349,7 @@ export function MapScreen() {
             <MagicStar size={20} color={colors.primary} variant="Bold" style={{ marginRight: 8 }} />
             <TextInput
               style={styles.omniInput}
-              placeholder='"כלב פודל שחור שאבד אתמול"'
+              placeholder={t("OmniSearchPlaceholder")}
               placeholderTextColor={colors.muted}
               value={omniQuery}
               onChangeText={setOmniQuery}
@@ -343,7 +359,7 @@ export function MapScreen() {
             {isAnalyzingOmni ? (
               <ActivityIndicator size="small" color={colors.primary} />
             ) : omniQuery.length > 0 ? (
-              <TouchableOpacity onPress={() => { playSound("pop"); setOmniQuery(""); setFilterPetType("ALL"); }}>
+              <TouchableOpacity onPress={() => { playSound("pop"); setOmniQuery(""); setAppliedQuery(""); setFilterPetType("ALL"); }}>
                 <CloseCircle size={20} color={colors.muted} variant="Outline" />
               </TouchableOpacity>
             ) : null}

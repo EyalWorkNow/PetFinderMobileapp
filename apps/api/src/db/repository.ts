@@ -1,6 +1,8 @@
 import type { CreatePostInput, QueryPostsFilters } from "../services/post-service";
 import type {
   ContactMessageRecord,
+  DonationRecord,
+  DonationStatus,
   EmbeddingRecord,
   MatchBundle,
   MatchRecord,
@@ -9,11 +11,28 @@ import type {
   PushTokenRecord,
   ReportRecord,
   SightingRecord,
-  UserRecord
+  UserRecord,
+  UserRole
 } from "./models";
 
 export interface Repository {
-  upsertUser(input: { id: string; email?: string | null; phone?: string | null }): Promise<UserRecord>;
+  upsertUser(input: {
+    id: string;
+    email?: string | null;
+    phone?: string | null;
+    role?: UserRole;
+    passwordHash?: string | null;
+    totalDonated?: number;
+  }): Promise<UserRecord>;
+  getUserByEmail(email: string): Promise<UserRecord | null>;
+  getUserById(id: string): Promise<UserRecord | null>;
+  listAllUsers(): Promise<UserRecord[]>;
+  createDonation(input: {
+    userId: string;
+    amount: number;
+    currency: string;
+    status: DonationStatus;
+  }): Promise<DonationRecord>;
   createPost(input: CreatePostInput): Promise<PostBundle>;
   getPostById(postId: string): Promise<PostBundle | null>;
   listPosts(filters: QueryPostsFilters): Promise<PostBundle[]>;

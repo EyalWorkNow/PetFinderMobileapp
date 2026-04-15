@@ -8,7 +8,7 @@ export function useTranslation() {
     const dict = translations[currentLang];
 
     const t = (key: TranslationKey, params?: Record<string, string | number>): string => {
-        let text = dict[key] || translations.English[key] || (key as string);
+        let text = (dict as Record<string, string>)[key] || translations.English[key] || (key as string);
         if (params) {
             Object.keys(params).forEach(p => {
                 text = text.replace(`{{${p}}}`, params[p].toString());

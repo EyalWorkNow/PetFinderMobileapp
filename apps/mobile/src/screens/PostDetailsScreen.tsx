@@ -27,7 +27,7 @@ import { useAuth } from "../context/AuthContext";
 import { useAcoustics } from "../context/AudioContext";
 import { useTranslation } from "../i18n/useTranslation";
 import { apiRequest } from "../lib/api";
-import { AppButton, colors, darkColors } from "../components/ui";
+import { AppButton, useThemeColors } from "../components/ui";
 import { Confetti } from "../components/Confetti";
 import { generatePosterHtml } from "../utils/PosterTemplate";
 import type { RootStackParamList } from "../navigation/types";
@@ -38,6 +38,7 @@ type Props = NativeStackScreenProps<RootStackParamList, "PostDetails">;
 export function PostDetailsScreen({ route, navigation }: Props) {
   const auth = useAuth();
   const queryClient = useQueryClient();
+  const theme = useThemeColors();
   const { playSound } = useAcoustics();
   const [contactModalOpen, setContactModalOpen] = useState(false);
   const [contactMessage, setContactMessage] = useState("Hi, I think this may be related to my pet post.");
@@ -164,7 +165,7 @@ export function PostDetailsScreen({ route, navigation }: Props) {
     if (!post) return;
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=petfind://post/${post.id}`;
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=petfinder://post/${post.id}`;
       const heroPhoto = post.photos && post.photos.length > 0 ? post.photos[0].storagePath : "https://images.unsplash.com/photo-1543466835-00a7907e9de1";
       const base64Photo = await fetchImageAsBase64(heroPhoto);
 
@@ -216,7 +217,7 @@ export function PostDetailsScreen({ route, navigation }: Props) {
         message: `🚨 ${post.type === "LOST" ? "PLEASE HELP!" : "PET FOUND!"}\n\n` +
           `🐶 ${post.title}\n` +
           `📍 Last seen: ${post.lastSeen.label || "Unknown"}\n` +
-          `Contact via PetFind App: ${post.contactPhone || "In-app message"}`,
+          `Contact via PetFinder App: ${post.contactPhone || "In-app message"}`,
       });
     } catch (error) {
       console.error(error);
@@ -225,8 +226,8 @@ export function PostDetailsScreen({ route, navigation }: Props) {
 
   if (postQuery.isLoading || !post) {
     return (
-      <View style={styles.centered}>
-        <Text style={styles.loading}>{postQuery.isLoading ? "Loading post..." : "Post not found."}</Text>
+      <View style={[styles.centered, { backgroundColor: theme.bg }]}>
+        <Text style={[styles.loading, { color: theme.text }]}>{postQuery.isLoading ? "Loading post..." : "Post not found."}</Text>
       </View>
     );
   }
@@ -235,7 +236,6 @@ export function PostDetailsScreen({ route, navigation }: Props) {
   const lastSeenDate = post.lastSeenTime ? new Date(post.lastSeenTime) : new Date();
   const hour = lastSeenDate.getHours();
   const isNightSighting = hour < 6 || hour >= 18;
-  const theme = isNightSighting ? darkColors : colors;
   const safePhotos = post.photos ?? [];
   const safeColors = post.colors ?? [];
   const safeSightings = post.sightings ?? [];

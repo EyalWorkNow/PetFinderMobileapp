@@ -9,6 +9,7 @@ interface AuthState {
   isAuthenticated: boolean;
   userId: string | null;
   accessToken: string | null;
+  role: "USER" | "ADMIN" | null;
   usesSupabaseAuth: boolean;
   signInWithEmail: (email: string, password: string) => Promise<void>;
   signUpWithEmail: (email: string, password: string) => Promise<void>;
@@ -24,18 +25,22 @@ const AuthContext = createContext<AuthState | null>(null);
 
 function sessionToState(session: Session | null) {
   if (!session?.access_token || !session.user?.id) {
-    return { userId: null, accessToken: null };
+    return { userId: null, accessToken: null, role: null };
   }
   return {
     userId: session.user.id,
-    accessToken: session.access_token
+    accessToken: session.access_token,
+    role: (session.user.user_metadata?.role as "USER" | "ADMIN") || "USER"
   };
 }
+
+const ADMIN_STORAGE_KEY = "petfind.adminSession";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isReady, setIsReady] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [role, setRole] = useState<"USER" | "ADMIN" | null>(null);
 
   useEffect(() => {
     async function bootstrap() {
@@ -49,32 +54,69 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       try {
-        // 5s timeout for session check to avoid hanging forever
+        const { data: subscription } = supabase.auth.onAuthStateChange(async (_event, session) => {
+          const state = sessionToState(session);
+
+          if (state.userId) {
+            // If we have a Supabase user, we MUST ensure the local admin bypass is cleared
+            await AsyncStorage.removeItem(ADMIN_STORAGE_KEY).catch(() => { });
+            setUserId(state.userId);
+            setAccessToken(state.accessToken);
+            setRole(state.role);
+          } else if (_event === "SIGNED_OUT") {
+            // Only clear if we're not currently in a local admin session
+            const hasAdmin = await AsyncStorage.getItem(ADMIN_STORAGE_KEY);
+            if (!hasAdmin) {
+              setUserId(null);
+              setAccessToken(null);
+              setRole(null);
+            }
+          }
+        });
+
+        const storedAdminStr = await AsyncStorage.getItem(ADMIN_STORAGE_KEY);
+        if (storedAdminStr) {
+          try {
+            const { user, token } = JSON.parse(storedAdminStr);
+            setUserId(user.id);
+            setAccessToken(token);
+            setRole(user.role);
+            setIsReady(true);
+            // Do not unsubscribe here, onAuthStateChange should remain active
+          } catch (e) {
+            console.warn("[AuthContext] Error parsing stored admin session, clearing it.", e);
+            await AsyncStorage.removeItem(ADMIN_STORAGE_KEY);
+          }
+        }
+
+        // 5s timeout for session check
         const sessionPromise = supabase.auth.getSession();
         const timeoutPromise = new Promise((_, reject) =>
           setTimeout(() => reject(new Error("Session check timed out")), 5000)
         );
 
-        const { data } = await Promise.race([sessionPromise, timeoutPromise]) as any;
+        const { data } = await Promise.race([sessionPromise, timeoutPromise]) as { data: { session: Session | null } };
         const mapped = sessionToState(data.session);
-        setUserId(mapped.userId);
-        setAccessToken(mapped.accessToken);
+        if (mapped.userId) {
+          // Verify we don't have an admin session that would override this
+          const hasAdmin = await AsyncStorage.getItem(ADMIN_STORAGE_KEY);
+          if (!hasAdmin) {
+            setUserId(mapped.userId);
+            setAccessToken(mapped.accessToken);
+            setRole(mapped.role);
+          }
+        }
+
+        return () => {
+          subscription.subscription.unsubscribe();
+        };
       } catch (error) {
-        console.warn("[AuthContext] Bootstrap error or timeout:", error);
-        // Fallback to unauthenticated state instead of hanging
         setUserId(null);
         setAccessToken(null);
+        setRole(null);
       } finally {
         setIsReady(true);
       }
-
-      const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
-        const state = sessionToState(session);
-        setUserId(state.userId);
-        setAccessToken(state.accessToken);
-      });
-
-      return () => subscription.subscription.unsubscribe();
     }
 
     const cleanupPromise = bootstrap();
@@ -88,8 +130,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isAuthenticated: Boolean(userId),
     userId,
     accessToken,
+    role,
     usesSupabaseAuth: appRuntimeConfig.usesSupabaseAuth,
     async signInWithEmail(email, password) {
+      // Local Admin Bypass
+      if (email.toLowerCase() === "admin@admin.com") {
+        const response = await fetch(`${appRuntimeConfig.apiUrl}/auth/admin/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password })
+        });
+
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.error || "Invalid admin credentials");
+        }
+
+        const data = await response.json();
+        await AsyncStorage.setItem(ADMIN_STORAGE_KEY, JSON.stringify(data));
+        setUserId(data.user.id);
+        setAccessToken(data.token);
+        setRole(data.user.role);
+        return;
+      }
+
+      // If logging in via Supabase, clear any local admin sessions
+      await AsyncStorage.removeItem(ADMIN_STORAGE_KEY);
+
       if (!supabase) {
         throw new Error("Supabase auth is not configured in this build.");
       }
@@ -139,11 +206,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!appRuntimeConfig.usesSupabaseAuth || !supabase) {
         await AsyncStorage.removeItem(DEMO_USER_STORAGE_KEY);
         setUserId(null);
+        setRole(null);
         return;
       }
+      await AsyncStorage.removeItem(ADMIN_STORAGE_KEY);
       await supabase.auth.signOut();
+      setUserId(null);
+      setAccessToken(null);
+      setRole(null);
     }
-  }), [accessToken, isReady, userId]);
+  }), [accessToken, isReady, userId, role]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

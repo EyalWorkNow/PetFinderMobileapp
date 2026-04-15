@@ -13,8 +13,9 @@
     "seed": "tsx src/seed.ts"
   },
   "dependencies": {
-    "@petfind/shared": "workspace:*",
     "@fastify/cors": "^10.0.2",
+    "@petfind/shared": "workspace:*",
+    "bcryptjs": "^3.0.3",
     "dotenv": "^16.4.7",
     "expo-server-sdk": "^3.13.0",
     "fastify": "^5.2.1",
@@ -24,6 +25,7 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^3.0.0",
     "@types/node": "^22.13.9",
     "@types/pg": "^8.11.13",
     "tsx": "^4.19.3",

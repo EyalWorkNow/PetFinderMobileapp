@@ -18,7 +18,9 @@ import { z } from "zod";
 import { useAuth } from "../context/AuthContext";
 import { AppButton, AppCard, AppInput, useThemeColors } from "../components/ui";
 import { LinearGradient } from "expo-linear-gradient";
-import { Sms, Lock, Call, PasswordCheck, Pet, ShieldTick, ArrowRight } from "iconsax-react-native";
+import { Sms, Lock, Call, ShieldTick, ArrowRight } from "iconsax-react-native";
+import { useTranslation } from "../i18n/useTranslation";
+import { AppLogo } from "../components/ui/AppLogo";
 
 const { width } = Dimensions.get("window");
 
@@ -35,6 +37,7 @@ const phoneSchema = z.object({
 export function AuthScreen() {
   const auth = useAuth();
   const theme = useThemeColors();
+  const { t } = useTranslation();
   const [mode, setMode] = useState<"EMAIL" | "PHONE">("EMAIL");
   const [isSignUp, setIsSignUp] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
@@ -136,12 +139,10 @@ export function AuthScreen() {
         <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
 
           <Animated.View style={[styles.headerArea, { transform: [{ scale: logoScale }] }]}>
-            <View style={[styles.logoBg, { backgroundColor: theme.primary }]}>
-              <Pet size={42} color="#FFF" variant="Bold" />
-            </View>
-            <Text style={[styles.title, { color: theme.text }]}>PetFind</Text>
+            <AppLogo size={100} />
+            <Text style={[styles.title, { color: theme.text }]}>PetFinder</Text>
             <Text style={[styles.subtitle, { color: theme.muted }]}>
-              {isSignUp ? "Create a new account" : "Welcome back, animal lover!"}
+              {isSignUp ? t("CreatePostSubtitle") : t("WelcomeBack")}
             </Text>
           </Animated.View>
 

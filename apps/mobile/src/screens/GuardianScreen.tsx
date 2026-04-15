@@ -122,17 +122,17 @@ export function GuardianScreen() {
                         </Text>
                     </View>
 
-                    <View style={[styles.guidelineCard, { backgroundColor: "#FEF3C7", borderColor: "#F59E0B" }]}>
+                    <View style={[styles.guidelineCard, { backgroundColor: theme.surface, borderColor: "#F59E0B", borderWidth: 1.5 }]}>
                         <View style={styles.guidelineHeader}>
                             <Warning2 size={24} color="#F59E0B" variant="Bold" />
-                            <Text style={[styles.guidelineTitle, { color: "#D97706" }]}>{t("ApproachProtocol")}</Text>
+                            <Text style={[styles.guidelineTitle, { color: "#F59E0B" }]}>{t("ApproachProtocol")}</Text>
                         </View>
                         <Text style={[styles.guidelineText, { color: theme.text }]}>
                             {t("ApproachDesc")}
                         </Text>
                     </View>
 
-                    <View style={[styles.guidelineCard, { backgroundColor: theme.primarySoft, borderColor: theme.primary }]}>
+                    <View style={[styles.guidelineCard, { backgroundColor: theme.surface, borderColor: theme.primary, borderWidth: 1 }]}>
                         <View style={styles.guidelineHeader}>
                             <Moon size={24} color={theme.primary} variant="Bold" />
                             <Text style={[styles.guidelineTitle, { color: theme.primary }]}>{t("NightOperations")}</Text>
@@ -142,7 +142,7 @@ export function GuardianScreen() {
                         </Text>
                     </View>
 
-                    <View style={[styles.guidelineCard, { backgroundColor: "rgba(0,0,0,0.03)", borderColor: theme.border }]}>
+                    <View style={[styles.guidelineCard, { backgroundColor: theme.surface, borderColor: theme.border, borderWidth: 1 }]}>
                         <View style={styles.guidelineHeader}>
                             <Car size={24} color={theme.text} variant="Bold" />
                             <Text style={[styles.guidelineTitle, { color: theme.text }]}>{t("TrafficHighways")}</Text>
@@ -152,7 +152,7 @@ export function GuardianScreen() {
                         </Text>
                     </View>
 
-                    <View style={[styles.guidelineCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+                    <View style={[styles.guidelineCard, { backgroundColor: theme.surface, borderColor: theme.border, borderWidth: 1 }]}>
                         <View style={styles.guidelineHeader}>
                             <LocationTick size={24} color={theme.text} variant="Bold" />
                             <Text style={[styles.guidelineTitle, { color: theme.text }]}>{t("PrivateProperty")}</Text>

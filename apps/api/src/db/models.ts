@@ -1,9 +1,14 @@
 import type { ContactMethod, PetSize, PetType, PostStatus, PostType } from "@petfind/shared";
 
+export type UserRole = "USER" | "ADMIN";
+
 export interface UserRecord {
   id: string;
   email: string | null;
   phone: string | null;
+  role: UserRole;
+  passwordHash: string | null;
+  totalDonated: number;
   createdAt: Date;
 }
 
@@ -111,4 +116,15 @@ export interface MatchBundle {
   match: MatchRecord;
   postA: PostBundle;
   postB: PostBundle;
+}
+
+export type DonationStatus = "PENDING" | "COMPLETED" | "FAILED";
+
+export interface DonationRecord {
+  id: string;
+  userId: string;
+  amount: number;
+  currency: string;
+  status: DonationStatus;
+  createdAt: Date;
 }

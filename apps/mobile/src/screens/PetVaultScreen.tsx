@@ -11,7 +11,9 @@ import {
     Profile2User,
     Record,
     Verify,
-    Edit2
+    Edit2,
+    CpuSetting,
+    FingerScan
 } from "iconsax-react-native";
 import { colors, useThemeColors, AppButton, AppCard } from "../components/ui";
 import { usePetVault, DashboardTask } from "../context/PetVaultContext";
@@ -77,24 +79,47 @@ export function PetVaultScreen() {
             <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 120 }]} showsVerticalScrollIndicator={false}>
                 {activeTab === "passport" ? (
                     <>
-                        {/* Main Pet Card */}
-                        <LinearGradient colors={[theme.primary, "#6366f1"]} style={styles.petIDCard}>
+                        {/* Main Pet Card - Premium Design */}
+                        <LinearGradient
+                            colors={[theme.primary, (theme as any).primaryDark || theme.primary]}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                            style={styles.petIDCard}
+                        >
+                            <View style={styles.cardPatternOverlay}>
+                                <FingerScan size={180} color="rgba(255,255,255,0.05)" style={styles.bgIcon} />
+                            </View>
+
                             <Pressable style={styles.petCardHeader} onPress={() => setIsProfileModalVisible(true)}>
-                                <Pet size={32} color="#fff" />
+                                <View style={styles.passportLabelContainer}>
+                                    <View style={styles.passportDot} />
+                                    <Text style={styles.passportLabel}>{t("PetPassportLabel")}</Text>
+                                </View>
                                 <View style={styles.verifiedBadge}>
                                     <Verify size={14} color="#fff" variant="Bold" />
                                     <Text style={styles.verifiedText}>{t("EditProfile")}</Text>
                                 </View>
                             </Pressable>
+
                             <View style={styles.petCardBody}>
-                                <View style={styles.petAvatarBg}>
-                                    <Pet size={40} color={theme.primary} variant="Bulk" />
+                                <View style={styles.petAvatarContainer}>
+                                    <View style={styles.petAvatarBg}>
+                                        <Pet size={48} color={theme.primary} variant="Bulk" />
+                                    </View>
+                                    <View style={styles.avatarGlow} />
                                 </View>
-                                <View>
+                                <View style={{ flex: 1 }}>
                                     <Text style={styles.petName}>{profile.name}</Text>
                                     <Text style={styles.petBreed}>{profile.breed} • {profile.age}</Text>
+                                    <View style={styles.chipTag}>
+                                        <CpuSetting size={12} color="rgba(255,255,255,0.7)" variant="Bulk" />
+                                        <Text style={styles.chipTagText}>{profile.chipId}</Text>
+                                    </View>
                                 </View>
                             </View>
+
+                            <View style={styles.glassDivider} />
+
                             <View style={styles.petCardFooter}>
                                 <View>
                                     <Text style={styles.footerLabel}>{t("CHIPID")}</Text>
@@ -102,7 +127,10 @@ export function PetVaultScreen() {
                                 </View>
                                 <View style={{ alignItems: "flex-end" }}>
                                     <Text style={styles.footerLabel}>{t("STATUS")}</Text>
-                                    <Text style={styles.footerVal}>{profile.status}</Text>
+                                    <View style={styles.statusPill}>
+                                        <Record size={10} color="#4ADE80" variant="Bold" />
+                                        <Text style={styles.statusText}>{t(profile.status as any) || profile.status}</Text>
+                                    </View>
                                 </View>
                             </View>
                         </LinearGradient>
@@ -131,7 +159,7 @@ export function PetVaultScreen() {
                         <View style={[styles.healthSummary, { backgroundColor: theme.surface }]}>
                             <View style={styles.summaryItem}>
                                 <Health size={28} color="#EF4444" variant="Bulk" />
-                                <Text style={[styles.summaryVal, { color: theme.text }]}>{healthCondition}</Text>
+                                <Text style={[styles.summaryVal, { color: theme.text }]}>{t(healthCondition as any) || healthCondition}</Text>
                                 <Text style={[styles.summaryLabel, { color: theme.muted }]}>{t("Condition")}</Text>
                             </View>
                             <View style={[styles.summaryDivider, { backgroundColor: theme.border }]} />
@@ -152,7 +180,7 @@ export function PetVaultScreen() {
                             >
                                 <View style={[styles.taskIndicator, { backgroundColor: task.type === "VET" ? "#EF4444" : task.type === "CARE" ? "#F59E0B" : "#3B82F6" }]} />
                                 <View style={{ flex: 1, gap: 4 }}>
-                                    <Text style={[styles.taskTitle, { color: theme.text }]}>{task.title}</Text>
+                                    <Text style={[styles.taskTitle, { color: theme.text }]}>{t(task.title as any) || task.title}</Text>
                                     <View style={styles.row}>
                                         <Calendar size={14} color={theme.muted} />
                                         <Text style={{ color: theme.muted, fontSize: 12 }}>{task.date} • {task.time}</Text>
@@ -195,17 +223,29 @@ const styles = StyleSheet.create({
     tab: { paddingVertical: 12, marginRight: 24 },
     tabText: { fontSize: 15, fontWeight: "800" },
     content: { padding: 24, gap: 24 },
-    petIDCard: { padding: 24, borderRadius: 32, gap: 24, elevation: 8, shadowOpacity: 0.3, shadowRadius: 15, shadowOffset: { width: 0, height: 10 } },
-    petCardHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-    verifiedBadge: { flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: "rgba(255,255,255,0.2)", paddingHorizontal: 10, paddingVertical: 6, borderRadius: 20 },
+    petIDCard: { padding: 24, borderRadius: 32, gap: 20, overflow: "hidden", elevation: 12, shadowOpacity: 0.4, shadowRadius: 20, shadowOffset: { width: 0, height: 12 } },
+    cardPatternOverlay: { ...StyleSheet.absoluteFillObject, opacity: 1 },
+    bgIcon: { position: "absolute", bottom: -40, right: -40 },
+    petCardHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", zIndex: 1 },
+    passportLabelContainer: { flexDirection: "row", alignItems: "center", gap: 6 },
+    passportDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: "#4ADE80" },
+    passportLabel: { color: "rgba(255,255,255,0.7)", fontSize: 10, fontWeight: "900", letterSpacing: 1.5 },
+    verifiedBadge: { flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: "rgba(255,255,255,0.15)", paddingHorizontal: 10, paddingVertical: 6, borderRadius: 20, borderWidth: 1, borderColor: "rgba(255,255,255,0.1)" },
     verifiedText: { color: "#fff", fontSize: 11, fontWeight: "800" },
-    petCardBody: { flexDirection: "row", alignItems: "center", gap: 16 },
-    petAvatarBg: { width: 70, height: 70, borderRadius: 35, backgroundColor: "#fff", alignItems: "center", justifyContent: "center" },
-    petName: { color: "#fff", fontSize: 24, fontWeight: "900" },
-    petBreed: { color: "rgba(255,255,255,0.8)", fontSize: 14, fontWeight: "600" },
-    petCardFooter: { flexDirection: "row", justifyContent: "space-between", borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.2)", paddingTop: 20 },
-    footerLabel: { color: "rgba(255,255,255,0.6)", fontSize: 10, fontWeight: "800" },
-    footerVal: { color: "#fff", fontSize: 13, fontWeight: "900", marginTop: 2 },
+    petCardBody: { flexDirection: "row", alignItems: "center", gap: 18, zIndex: 1 },
+    petAvatarContainer: { position: "relative" },
+    petAvatarBg: { width: 80, height: 80, borderRadius: 40, backgroundColor: "#fff", alignItems: "center", justifyContent: "center", zIndex: 2 },
+    avatarGlow: { position: "absolute", width: 90, height: 90, borderRadius: 45, backgroundColor: "rgba(255,255,255,0.2)", top: -5, left: -5 },
+    petName: { color: "#fff", fontSize: 28, fontWeight: "900", letterSpacing: -0.5 },
+    petBreed: { color: "rgba(255,255,255,0.8)", fontSize: 15, fontWeight: "600", marginTop: -2 },
+    chipTag: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4, backgroundColor: "rgba(0,0,0,0.1)", alignSelf: "flex-start", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
+    chipTagText: { color: "rgba(255,255,255,0.7)", fontSize: 11, fontWeight: "700" },
+    glassDivider: { height: 1, backgroundColor: "rgba(255,255,255,0.15)", marginVertical: 4 },
+    petCardFooter: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", zIndex: 1 },
+    footerLabel: { color: "rgba(255,255,255,0.5)", fontSize: 10, fontWeight: "800", letterSpacing: 0.5 },
+    footerVal: { color: "#fff", fontSize: 14, fontWeight: "900", marginTop: 2 },
+    statusPill: { flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: "rgba(0,0,0,0.2)", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, marginTop: 4 },
+    statusText: { color: "#fff", fontSize: 12, fontWeight: "800" },
     sectionTitle: { fontSize: 22, fontWeight: "900" },
     intelList: { gap: 12 },
     intelItem: { flexDirection: "row", alignItems: "flex-start", padding: 16, gap: 12, borderRadius: 20 },

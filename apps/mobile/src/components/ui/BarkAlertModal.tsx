@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { View, Text, StyleSheet, Modal, Animated, Pressable, Dimensions } from "react-native";
 import { Warning2, Routing, CloseSquare } from "iconsax-react-native";
-import { colors, AppButton } from "../../components/ui";
+import { useThemeColors, AppButton } from "../ui";
 import * as Haptics from "expo-haptics";
 import { BlurView } from "expo-blur";
 
@@ -16,6 +16,7 @@ interface BarkAlertModalProps {
 const { width, height } = Dimensions.get("window");
 
 export function BarkAlertModal({ visible, onClose, onDeploy, petName = "A Dog", distance = "1.2 km" }: BarkAlertModalProps) {
+    const theme = useThemeColors();
     const pulseAnim = useRef(new Animated.Value(1)).current;
     const slideAnim = useRef(new Animated.Value(height)).current;
 
@@ -55,30 +56,32 @@ export function BarkAlertModal({ visible, onClose, onDeploy, petName = "A Dog", 
 
     if (!visible) return null;
 
+    const styles = getStyles(theme);
+
     return (
         <Modal transparent visible={visible} animationType="none">
-            <BlurView intensity={80} tint="dark" style={styles.absoluteFill}>
+            <BlurView intensity={80} tint={theme.bg === "#000" ? "dark" : "light"} style={styles.absoluteFill}>
                 <Animated.View style={[styles.container, { transform: [{ translateY: slideAnim }] }]}>
                     <Pressable style={styles.closeButton} onPress={onClose}>
-                        <CloseSquare size={32} color="rgba(255,255,255,0.5)" variant="Bulk" />
+                        <CloseSquare size={32} color={theme.muted} variant="Bulk" />
                     </Pressable>
 
                     <Animated.View style={[styles.alertCircle, { transform: [{ scale: pulseAnim }] }]}>
-                        <Warning2 size={64} color={colors.danger} variant="Bold" />
+                        <Warning2 size={64} color={theme.danger} variant="Bold" />
                     </Animated.View>
 
-                    <Text style={styles.alertTitle}>BARK ALERT</Text>
-                    <Text style={styles.alertSubtitle}>Emergency Deployment Requested</Text>
+                    <Text style={[styles.alertTitle, { color: theme.danger }]}>BARK ALERT</Text>
+                    <Text style={[styles.alertSubtitle, { color: theme.muted }]}>Emergency Deployment Requested</Text>
 
-                    <View style={styles.card}>
-                        <Text style={styles.petName}>{petName} was just reported missing near your location!</Text>
-                        <View style={styles.distanceBadge}>
-                            <Routing size={16} color={colors.surface} variant="Bold" />
+                    <View style={[styles.card, { backgroundColor: theme.surface }]}>
+                        <Text style={[styles.petName, { color: theme.text }]}>{petName} was just reported missing near your location!</Text>
+                        <View style={[styles.distanceBadge, { backgroundColor: theme.danger }]}>
+                            <Routing size={16} color="#fff" variant="Bold" />
                             <Text style={styles.distanceText}>Est. distance: {distance}</Text>
                         </View>
                     </View>
 
-                    <Text style={styles.instructions}>
+                    <Text style={[styles.instructions, { color: theme.text }]}>
                         You are in the primary search radius. Deploy now to help secure the perimeter before the pet moves further.
                     </Text>
 
@@ -99,7 +102,7 @@ export function BarkAlertModal({ visible, onClose, onDeploy, petName = "A Dog", 
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
     absoluteFill: {
         ...StyleSheet.absoluteFillObject,
         justifyContent: "center",
@@ -138,22 +141,19 @@ const styles = StyleSheet.create({
         borderColor: "rgba(239, 68, 68, 0.3)"
     },
     alertTitle: {
-        fontSize: 36,
+        fontSize: 32,
         fontWeight: "900",
-        color: colors.danger,
         letterSpacing: 2,
         marginBottom: 8
     },
     alertSubtitle: {
         fontSize: 14,
-        color: colors.muted,
         textTransform: "uppercase",
         letterSpacing: 1,
         fontWeight: "700",
         marginBottom: 32
     },
     card: {
-        backgroundColor: colors.surface,
         width: "100%",
         padding: 20,
         borderRadius: 20,
@@ -164,26 +164,23 @@ const styles = StyleSheet.create({
     petName: {
         fontSize: 18,
         fontWeight: "700",
-        color: colors.text,
         textAlign: "center"
     },
     distanceBadge: {
         flexDirection: "row",
         alignItems: "center",
-        backgroundColor: colors.danger,
         paddingHorizontal: 12,
         paddingVertical: 6,
         borderRadius: 999,
         gap: 6
     },
     distanceText: {
-        color: colors.surface,
+        color: "#fff",
         fontWeight: "800",
         fontSize: 14
     },
     instructions: {
         fontSize: 15,
-        color: colors.text,
         textAlign: "center",
         lineHeight: 22,
         marginBottom: 32

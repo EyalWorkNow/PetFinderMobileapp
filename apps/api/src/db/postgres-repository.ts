@@ -4,6 +4,8 @@ import type { PostType } from "@petfind/shared";
 import type { CreatePostInput, QueryPostsFilters } from "../services/post-service";
 import type {
   ContactMessageRecord,
+  DonationRecord,
+  DonationStatus,
   EmbeddingRecord,
   MatchBundle,
   MatchRecord,
@@ -13,7 +15,8 @@ import type {
   PushTokenRecord,
   ReportRecord,
   SightingRecord,
-  UserRecord
+  UserRecord,
+  UserRole
 } from "./models";
 import type { Repository } from "./repository";
 
@@ -106,15 +109,32 @@ export class PostgresRepository implements Repository {
     return new PostgresRepository(new Pool({ connectionString }));
   }
 
-  async upsertUser(input: { id: string; email?: string | null; phone?: string | null }): Promise<UserRecord> {
+  async upsertUser(input: {
+    id: string;
+    email?: string | null;
+    phone?: string | null;
+    role?: UserRole;
+    passwordHash?: string | null;
+    totalDonated?: number;
+  }): Promise<UserRecord> {
     const result = await this.pool.query(
-      `insert into users (id, email, phone)
-       values ($1, $2, $3)
+      `insert into users (id, email, phone, role, password_hash, total_donated)
+       values ($1, $2, $3, $4, $5, $6)
        on conflict (id) do update
        set email = coalesce(excluded.email, users.email),
-           phone = coalesce(excluded.phone, users.phone)
-       returning id, email, phone, created_at`,
-      [input.id, input.email ?? null, input.phone ?? null]
+           phone = coalesce(excluded.phone, users.phone),
+           role = coalesce(excluded.role, users.role),
+           password_hash = coalesce(excluded.password_hash, users.password_hash),
+           total_donated = coalesce(excluded.total_donated, users.total_donated)
+       returning id, email, phone, role, password_hash, total_donated, created_at`,
+      [
+        input.id,
+        input.email ?? null,
+        input.phone ?? null,
+        input.role ?? "USER",
+        input.passwordHash ?? null,
+        input.totalDonated ?? 0
+      ]
     );
 
     const row = result.rows[0];
@@ -122,7 +142,93 @@ export class PostgresRepository implements Repository {
       id: row.id,
       email: row.email,
       phone: row.phone,
+      role: row.role as UserRole,
+      passwordHash: row.password_hash,
+      totalDonated: Number(row.total_donated),
       createdAt: toDate(row.created_at)
+    };
+  }
+
+  async getUserByEmail(email: string): Promise<UserRecord | null> {
+    const result = await this.pool.query(
+      `select id, email, phone, role, password_hash, total_donated, created_at 
+       from users where email = $1`,
+      [email]
+    );
+    if (result.rows.length === 0) return null;
+    const row = result.rows[0];
+    return {
+      id: row.id,
+      email: row.email,
+      phone: row.phone,
+      role: row.role as UserRole,
+      passwordHash: row.password_hash,
+      totalDonated: Number(row.total_donated),
+      createdAt: toDate(row.created_at)
+    };
+  }
+
+  async getUserById(id: string): Promise<UserRecord | null> {
+    const result = await this.pool.query(
+      `select id, email, phone, role, password_hash, total_donated, created_at 
+       from users where id = $1`,
+      [id]
+    );
+    if (result.rows.length === 0) return null;
+    const row = result.rows[0];
+    return {
+      id: row.id,
+      email: row.email,
+      phone: row.phone,
+      role: row.role as UserRole,
+      passwordHash: row.password_hash,
+      totalDonated: Number(row.total_donated),
+      createdAt: toDate(row.created_at)
+    };
+  }
+
+  async listAllUsers(): Promise<UserRecord[]> {
+    const result = await this.pool.query(
+      `select id, email, phone, role, password_hash, total_donated, created_at from users`
+    );
+    return result.rows.map(row => ({
+      id: row.id,
+      email: row.email,
+      phone: row.phone,
+      role: row.role as UserRole,
+      passwordHash: row.password_hash,
+      totalDonated: Number(row.total_donated),
+      createdAt: toDate(row.created_at)
+    }));
+  }
+
+  async createDonation(input: {
+    userId: string;
+    amount: number;
+    currency: string;
+    status: DonationStatus;
+  }): Promise<DonationRecord> {
+    const id = randomUUID();
+    await this.pool.query(
+      `insert into donations (id, user_id, amount, currency, status, created_at)
+       values ($1, $2, $3, $4, $5, now())`,
+      [id, input.userId, input.amount, input.currency, input.status]
+    );
+
+    if (input.status === "COMPLETED") {
+      await this.pool.query(
+        `update users set total_donated = total_donated + $1 where id = $2`,
+        [input.amount, input.userId]
+      );
+    }
+
+    return {
+      id,
+      userId: input.userId,
+      amount: input.amount,
+      currency: input.currency,
+      status: input.status,
+      createdAt: new Date()
     };
   }
 

@@ -14,13 +14,22 @@ import Svg, { Path, Circle } from "react-native-svg";
 function DogIcon({ color, size }: { color: string; size: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path d="M12 18.5C14.7614 18.5 17 16.2614 17 13.5C17 10.7386 14.7614 8.5 12 8.5C9.23858 8.5 7 10.7386 7 13.5C7 16.2614 9.23858 18.5 12 18.5Z" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <Path d="M17 13.5V12.5C17 9.46 14.76 7 12 7C9.24 7 7 9.46 7 12.5V13.5" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <Path d="M17.5 16.5C19.43 16.5 21 14.93 21 13C21 11.07 19.43 9.5 17.5 9.5" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <Path d="M6.5 16.5C4.57 16.5 3 14.93 3 13C3 11.07 4.57 9.5 6.5 9.5" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <Path d="M10 13H10.01" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      <Path d="M14 13H14.01" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      <Path d="M12 16V15" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      {/* Dog face */}
+      <Path d="M12 20C16.4183 20 20 16.866 20 13C20 9.13401 16.4183 6 12 6C7.58172 6 4 9.13401 4 13C4 16.866 7.58172 20 12 20Z" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      {/* Left floppy ear */}
+      <Path d="M5.5 10C4.5 7 3 5 2 4.5C1.5 5.5 2.5 9 5 11" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      {/* Right floppy ear */}
+      <Path d="M18.5 10C19.5 7 21 5 22 4.5C22.5 5.5 21.5 9 19 11" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      {/* Left eye */}
+      <Circle cx="9" cy="12" r="1.2" fill={color} />
+      {/* Right eye */}
+      <Circle cx="15" cy="12" r="1.2" fill={color} />
+      {/* Nose */}
+      <Path d="M12 14.5C12.5523 14.5 13 14.0523 13 13.5C13 12.9477 12.5523 12.5 12 12.5C11.4477 12.5 11 12.9477 11 13.5C11 14.0523 11.4477 14.5 12 14.5Z" fill={color} />
+      {/* Mouth */}
+      <Path d="M12 14.5V15.5M12 15.5C10.5 16.5 9.5 16 9.5 16M12 15.5C13.5 16.5 14.5 16 14.5 16" stroke={color} strokeWidth="1" strokeLinecap="round" />
+      {/* Tongue */}
+      <Path d="M12 15.5C12 16.5 12.5 17.5 12 17.5C11.5 17.5 12 16.5 12 15.5" stroke={color} strokeWidth="1" strokeLinecap="round" />
     </Svg>
   );
 }
@@ -28,10 +37,23 @@ function DogIcon({ color, size }: { color: string; size: number }) {
 function ParrotIcon({ color, size }: { color: string; size: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <Path d="M15 12C15 8.13 13.66 5 12 5C10.34 5 9 8.13 9 12" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <Path d="M12 15V20M12 20H10M12 20H14" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <Path d="M18 10C18 10 20 8 18 6" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      {/* Body */}
+      <Path d="M12 21C8 21 6 18 6 15C6 11 9 8 12 8C15 8 17 10 17 13C17 16 15 18 13 18" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      {/* Head */}
+      <Path d="M12 8C12 8 10 4 12 3C14 2 16 4 16 6C16 7.5 15 8.5 14 9" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      {/* Curved beak */}
+      <Path d="M16 6C17 5.5 18.5 5.5 18.5 7C18.5 8 17 8 16 7.5" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      {/* Eye */}
+      <Circle cx="13" cy="6" r="0.8" fill={color} />
+      {/* Crest feathers */}
+      <Path d="M11 4C10 2.5 10.5 1.5 11.5 2" stroke={color} strokeWidth="1.2" strokeLinecap="round" />
+      <Path d="M12 3C11.5 1.5 12 0.5 13 1" stroke={color} strokeWidth="1.2" strokeLinecap="round" />
+      {/* Tail feathers */}
+      <Path d="M8 19L6 22M9 20L8 22.5M10 20.5L10 22" stroke={color} strokeWidth="1.2" strokeLinecap="round" />
+      {/* Wing detail */}
+      <Path d="M9 12C10 11 13 11 14 12" stroke={color} strokeWidth="1" strokeLinecap="round" />
+      {/* Perch / feet */}
+      <Path d="M10 18H14" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
     </Svg>
   );
 }
@@ -39,12 +61,24 @@ function ParrotIcon({ color, size }: { color: string; size: number }) {
 function CatIcon({ color, size }: { color: string; size: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path d="M12 19C15.866 19 19 15.866 19 12C19 8.13401 15.866 5 12 5C8.13401 5 5 8.13401 5 12C5 15.866 8.13401 19 12 19Z" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <Path d="M7 8L5 4" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <Path d="M17 8L19 4" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <Path d="M9 12H9.01" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      <Path d="M15 12H15.01" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      <Path d="M12 14.5V15.5" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      {/* Cat face */}
+      <Path d="M12 20C16.4183 20 20 17.3137 20 14C20 10.6863 16.4183 8 12 8C7.58172 8 4 10.6863 4 14C4 17.3137 7.58172 20 12 20Z" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      {/* Left pointed ear */}
+      <Path d="M5 10L3 3L8 8" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      {/* Right pointed ear */}
+      <Path d="M19 10L21 3L16 8" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      {/* Left eye */}
+      <Path d="M8.5 13C9.32843 13 10 12.5523 10 12C10 11.4477 9.32843 11 8.5 11C7.67157 11 7 11.4477 7 12C7 12.5523 7.67157 13 8.5 13Z" fill={color} />
+      {/* Right eye */}
+      <Path d="M15.5 13C16.3284 13 17 12.5523 17 12C17 11.4477 16.3284 11 15.5 11C14.6716 11 14 11.4477 14 12C14 12.5523 14.6716 13 15.5 13Z" fill={color} />
+      {/* Nose */}
+      <Path d="M11 14.5L12 14L13 14.5" stroke={color} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+      {/* Mouth */}
+      <Path d="M12 14V15.5M12 15.5C11 16 10 16 10 16M12 15.5C13 16 14 16 14 16" stroke={color} strokeWidth="1" strokeLinecap="round" />
+      {/* Left whiskers */}
+      <Path d="M8 14.5L3.5 13M8 15.5L4 16" stroke={color} strokeWidth="0.8" strokeLinecap="round" />
+      {/* Right whiskers */}
+      <Path d="M16 14.5L20.5 13M16 15.5L20 16" stroke={color} strokeWidth="0.8" strokeLinecap="round" />
     </Svg>
   );
 }
@@ -151,13 +185,13 @@ const makeStyles = (theme: any) => StyleSheet.create({
   },
   petOptionBtn: {
     width: "48%",
-    backgroundColor: "rgba(0,0,0,0.03)",
+    backgroundColor: theme.surface,
     borderRadius: 20,
     padding: 20,
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 2,
-    borderColor: "transparent",
+    borderColor: theme.border,
     gap: 12
   },
   petOptionBtnActive: {
@@ -179,8 +213,10 @@ const makeStyles = (theme: any) => StyleSheet.create({
     height: 60,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(255,255,255,0.4)",
-    borderRadius: 18
+    backgroundColor: theme.bg,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: theme.border
   },
   checkBadge: {
     position: "absolute",
@@ -193,6 +229,6 @@ const makeStyles = (theme: any) => StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 2,
-    borderColor: "#fff"
+    borderColor: theme.surface
   }
 });

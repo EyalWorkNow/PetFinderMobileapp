@@ -31,7 +31,7 @@ export async function buildApp(overrides: AppOverrides = {}) {
       : new InMemoryRepository());
 
   const embeddingProvider = overrides.embeddingProvider ?? createEmbeddingProvider(config);
-  const authService = overrides.authService ?? new AuthService(config);
+  const authService = overrides.authService ?? new AuthService(config, repository);
   const pushService = new PushNotificationService(repository, config);
   const postService = new PostService(
     repository,
@@ -72,7 +72,22 @@ export async function buildApp(overrides: AppOverrides = {}) {
       reply.status(401).send({ error: "UNAUTHORIZED" });
       return null;
     }
-    await repository.upsertUser(user);
+    await repository.upsertUser({
+      id: user.id,
+      email: user.email,
+      phone: user.phone,
+      role: user.role
+    });
+    return user;
+  }
+
+  async function requireAdmin(request: Parameters<AuthService["verifyRequest"]>[0], reply: any) {
+    const user = await requireUser(request, reply);
+    if (!user) return null;
+    if (user.role !== "ADMIN") {
+      reply.status(403).send({ error: "FORBIDDEN_ADMIN_ONLY" });
+      return null;
+    }
     return user;
   }
 
@@ -94,7 +109,34 @@ export async function buildApp(overrides: AppOverrides = {}) {
     return {
       id: user.id,
       email: user.email,
-      phone: user.phone
+      phone: user.phone,
+      role: user.role
+    };
+  });
+
+  app.post("/auth/admin/login", async (request, reply) => {
+    const { email, password } = request.body as any;
+    const result = await authService.loginWithPassword(email, password);
+    if (!result) {
+      reply.status(401).send({ error: "INVALID_CREDENTIALS" });
+      return;
+    }
+    return result;
+  });
+
+  app.get("/admin/stats", async (request, reply) => {
+    const admin = await requireAdmin(request, reply);
+    if (!admin) return;
+
+    const posts = await repository.listPosts({});
+    const users = await repository.listAllUsers();
+    const totalDonations = users.reduce((sum, u) => sum + (u.totalDonated || 0), 0);
+
+    return {
+      totalPosts: posts.length,
+      totalUsers: users.length,
+      totalDonations,
+      activePatrols: 0 // To be implemented with live tracking
     };
   });
 

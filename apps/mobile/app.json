@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "PetFind",
-    "slug": "petfind",
+    "name": "PetFinder",
+    "slug": "petfinder",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
@@ -15,12 +15,14 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.petfind.mobile"
+      "bundleIdentifier": "petfinder",
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
       "package": "com.petfind.mobile"
     },
     "plugins": [
+      "@react-native-firebase/app",
       "expo-notifications",
       "expo-asset",
       "expo-font"

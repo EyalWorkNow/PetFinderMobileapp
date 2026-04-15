@@ -1,3 +1,4 @@
+import { hash } from "bcryptjs";
 import type { Repository } from "./db/repository";
 import type { PostService } from "./services/post-service";
 
@@ -183,7 +184,23 @@ const demoPosts = [
   }
 ] as const;
 
+export async function seedAdmin(repository: Repository): Promise<void> {
+  const adminEmail = "admin@admin.com";
+  const existing = await repository.getUserByEmail(adminEmail);
+  if (existing) return;
+
+  const passwordHash = await hash("123123", 10);
+  await repository.upsertUser({
+    id: "admin-user",
+    email: adminEmail,
+    role: "ADMIN",
+    passwordHash,
+    totalDonated: 0
+  });
+}
+
 export async function seedDemoData(postService: PostService, repository: Repository): Promise<void> {
+  await seedAdmin(repository);
   const existing = await repository.listUserPosts("demo-user-1");
   const existingIsrael = await repository.listUserPosts("demo-israel-1");
 

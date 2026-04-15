@@ -13,6 +13,7 @@ export type MainTabParamList = {
   Create: undefined;
   Vault: undefined;
   Profile: undefined;
+  AdminDashboard: undefined;
 };
 
 export type CreateStackParamList = {
